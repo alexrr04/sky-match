@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
+import { Button } from '@react-navigation/elements';
 
 export default function InGameScreen() {
   const { navigateTo } = useNavigate();
@@ -11,20 +11,7 @@ export default function InGameScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>Game in Progress</ThemedText>
-        <ThemedText style={styles.timer}>Time: 00:00</ThemedText>
-      </View>
-
-      <View style={styles.gameArea}>
-        <ThemedText style={styles.gameText}>Game Content Here</ThemedText>
-      </View>
-
-      <View style={styles.footer}>
-        <ThemedText style={styles.actionButton} onPress={handleEndGame}>
-          End Game
-        </ThemedText>
-      </View>
+      <Button onPress={handleEndGame}>End Game</Button>
     </View>
   );
 }

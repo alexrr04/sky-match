@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
+import { Button } from '@react-navigation/elements';
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -11,13 +11,7 @@ export default function LobbyScreen() {
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.title}>Game Lobby</ThemedText>
-      <View style={styles.content}>
-        <ThemedText style={styles.subtitle}>Players in Lobby: 1</ThemedText>
-        <ThemedText style={styles.actionButton} onPress={handleStartMatch}>
-          Start Match
-        </ThemedText>
-      </View>
+      <Button onPress={handleStartMatch}>Start Match</Button>
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
+import { Button } from '@react-navigation/elements';
 
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
@@ -11,10 +11,7 @@ export default function MainScreen() {
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.title}>Welcome to the Game</ThemedText>
-      <ThemedText style={styles.startButton} onPress={handleStartGame}>
-        Start Game
-      </ThemedText>
+      <Button onPress={handleStartGame}>Start Game</Button>
     </View>
   );
 }

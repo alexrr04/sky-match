@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
+import { Button } from '@react-navigation/elements';
 
 export default function EndGameScreen() {
   const { navigateTo } = useNavigate();
@@ -11,18 +11,7 @@ export default function EndGameScreen() {
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.title}>Game Over!</ThemedText>
-
-      <View style={styles.results}>
-        <ThemedText style={styles.resultText}>Final Score: 1000</ThemedText>
-        <ThemedText style={styles.resultText}>Time: 05:00</ThemedText>
-      </View>
-
-      <View style={styles.actions}>
-        <ThemedText style={styles.actionButton} onPress={handleReturnToLobby}>
-          Return to Lobby
-        </ThemedText>
-      </View>
+      <Button onPress={handleReturnToLobby}>Return to Lobby</Button>
     </View>
   );
 }
