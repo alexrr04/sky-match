@@ -3,6 +3,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
 
 
 export default function LobbyScreen() {
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     paddingHorizontal: 20,
     position: 'relative',
-    backgroundColor: '#F8FAFC', // Light grey-blue background
+    backgroundColor: Colors.light.background,
   },
   groupCodeContainer: {
     marginBottom: 30,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     right: 16,
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.light.background,
     shadowColor: '#60A5FA',
     shadowOffset: {
       width: 0,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   groupCodeLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#3B82F6', // Bright blue
     textAlign: 'center',
     marginBottom: 8,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   groupCodeValue: {
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#1E40AF', // Dark blue
@@ -129,10 +130,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#1E293B', // Dark grey-blue
-    marginBottom: 16,
+    color: Colors.light.primaryText,
+    marginBottom: 12,
   },
   memberList: {
     paddingBottom: 100, // Space for the fixed button
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    backgroundColor: '#2563EB', // Rich blue
+    backgroundColor: Colors.light.primary,
     color: '#FFFFFF',
     borderRadius: 12,
     width: '100%',
