@@ -31,7 +31,7 @@ const sameOriginGroup: FriendGroup = {
     {
       name: "Maria",
       originAirport: "BCN",
-      budget: 600,
+      budget: 100,
       Relax: true,
       Adventure: false,
       Cold: false,
@@ -47,7 +47,7 @@ const sameOriginGroup: FriendGroup = {
     {
       name: "Alex",
       originAirport: "BCN",
-      budget: 400,
+      budget: 200,
       Relax: false,
       Adventure: true,
       Cold: true,
@@ -72,7 +72,7 @@ const multiOriginGroup: FriendGroup = {
     {
       name: "Carlos",
       originAirport: "BCN",
-      budget: 500,
+      budget: 300,
       Relax: false,
       Adventure: true,
       Cold: false,
@@ -88,7 +88,7 @@ const multiOriginGroup: FriendGroup = {
     {
       name: "Laura",
       originAirport: "MAD",
-      budget: 800,
+      budget: 400,
       Relax: true,
       Adventure: false,
       Cold: true,
@@ -104,7 +104,7 @@ const multiOriginGroup: FriendGroup = {
     {
       name: "Pierre",
       originAirport: "CDG",
-      budget: 700,
+      budget: 200,
       Relax: true,
       Adventure: true,
       Cold: false,
