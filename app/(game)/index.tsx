@@ -1,4 +1,5 @@
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TextInput } from 'react-native';
+import React from 'react';
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
@@ -12,8 +13,15 @@ export default function MainScreen() {
   };
 
   const handleJoinGroup = () => {
-    navigateTo('/join-group');
+    setShowPopup(true);
   };
+
+  const handleConfirmGroupCode = () => {
+    navigateTo('/lobby');
+  };
+
+  const [showPopup, setShowPopup] = React.useState(false);
+  const [groupCode, setGroupCode] = React.useState('');
 
   return (
     <View style={styles.container}>
@@ -22,7 +30,22 @@ export default function MainScreen() {
         style={styles.logo}
       />
       <Text style={styles.text}>FriendTrip</Text>
-      <View style={styles.buttonContainer}>
+      {showPopup && (
+        <View style={styles.popup}>
+          <Text style={styles.popupText}>Enter Group Code:</Text>
+          <TextInput
+            style={styles.input}
+            value={groupCode}
+            onChangeText={setGroupCode}
+            placeholder="Group Code"
+          />
+          <PrimaryButton 
+            label="Confirm" 
+            onPress={handleConfirmGroupCode} 
+          />
+        </View>
+      )}
+      <View style={[styles.buttonContainer, showPopup && styles.dimmed]}>
         <PrimaryButton 
           label="Create Group" 
           onPress={handleCreateGroup} 
@@ -59,5 +82,33 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     gap: 20,
+  },
+  popup: {
+    position: 'absolute',
+    top: '40%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: Colors.light.background,
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  popupText: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: Colors.light.primaryText,
+  },
+  input: {
+    width: '80%',
+    height: 40,
+    borderColor: Colors.light.primary,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  dimmed: {
+    opacity: 0.5,
   },
 });
