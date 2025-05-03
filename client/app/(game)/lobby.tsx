@@ -12,9 +12,8 @@ import {
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { MaterialIcons } from '@expo/vector-icons';
 import { socket } from '@/utils/socket';
 
 // Define a TypeScript interface for a participant
@@ -34,12 +33,18 @@ const { width, height } = Dimensions.get('window');
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
   const [lobbyData, setLobbyData] = useState<LobbyData | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isHost, setIsHost] = useState(false);
+  const [lobbyCode, setLobbyCode] = useState('');
 
   useEffect(() => {
     // Listen for lobby data updates
     const handleLobbyData = (data: LobbyData) => {
       console.log('Received lobby data:', data);
       setLobbyData(data);
+      setLobbyCode(data.lobbyCode);
+      setParticipants(data.members);
+      setIsHost(data.members.some((member) => member.isHost));
     };
 
     socket.on('lobbyData', handleLobbyData);
@@ -191,6 +196,31 @@ const styles = StyleSheet.create({
         elevation: 4,
       },
     }),
+  },
+  copyButton: {
+    padding: 10,
+    backgroundColor: Colors.light.secondary + '20',
+    borderRadius: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.light.secondary + '40',
+    marginHorizontal: 16,
+  },
+  infoSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 12,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoText: {
+    marginLeft: 8,
+    color: Colors.light.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   codeSection: {
     padding: 16,

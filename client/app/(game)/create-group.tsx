@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import PrimaryButton from '@/components/PrimaryButton';
 import { Colors } from '@/constants/Colors';
-<<<<<<< HEAD:client/app/(game)/create-group.tsx
 import { useNavigate } from '@/hooks/useNavigate';
 import { socket } from '@/utils/socket';
-=======
-import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, { 
-  useAnimatedStyle, 
-  withRepeat, 
-  withSequence, 
-  withTiming,
+import Animated, {
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
->>>>>>> origin:app/(game)/create-group.tsx
 
 export default function CreateGroup() {
   const [name, setName] = useState('');
@@ -34,17 +37,11 @@ export default function CreateGroup() {
 
   React.useEffect(() => {
     // Rotate icon animation
-    iconRotate.value = withRepeat(
-      withSequence(
-        withSpring(360)
-      ),
-      -1,
-      true
-    );
+    iconRotate.value = withRepeat(withSequence(withSpring(360)), -1, true);
   }, []);
 
   const iconStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${iconRotate.value}deg` }]
+    transform: [{ rotate: `${iconRotate.value}deg` }],
   }));
 
   const onDayPress = (day: DateData) => {
@@ -106,7 +103,6 @@ export default function CreateGroup() {
 
   const handleCreate = () => {
     if (name.trim() && startDate && endDate) {
-<<<<<<< HEAD:client/app/(game)/create-group.tsx
       // Emit socket event to create the lobby
       console.log('Creating lobby with name:', name);
       socket.emit(
@@ -123,73 +119,45 @@ export default function CreateGroup() {
           }
         }
       );
-=======
-      router.push('/(game)/lobby');
->>>>>>> origin:app/(game)/create-group.tsx
     }
   };
 
   return (
     <View style={styles.container}>
-<<<<<<< HEAD:client/app/(game)/create-group.tsx
-      <Text style={styles.title}>Create Trip Group</Text>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Your Name</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your name"
-          placeholderTextColor={Colors.light.placeholder}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select trip dates</Text>
-        <View style={styles.calendarContainer}>
-          <Calendar
-            onDayPress={onDayPress}
-            markedDates={markedDates}
-            minDate={new Date().toISOString().split('T')[0]}
-            markingType={'period'}
-            theme={{
-              calendarBackground: '#fff',
-              selectedDayBackgroundColor: Colors.light.primary,
-              selectedDayTextColor: Colors.light.buttonText,
-              todayTextColor: Colors.light.primary,
-              textDisabledColor: Colors.light.disabled,
-              arrowColor: Colors.light.primary,
-            }}
-          />
-        </View>
-        {startDate && endDate && (
-          <Text style={styles.periodText}>
-            Selected period: {new Date(startDate).toLocaleDateString()} -{' '}
-            {new Date(endDate).toLocaleDateString()}
-          </Text>
-        )}
-=======
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => router.replace('/')}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
       >
-        <MaterialIcons name="arrow-back" size={28} color={Colors.light.primary} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigateTo('/', 'replace')}
+        >
+          <MaterialIcons
+            name="arrow-back"
+            size={28}
+            color={Colors.light.primary}
+          />
+        </TouchableOpacity>
 
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>Create Trip Group</Text>
-        <Animated.View style={[styles.iconContainer, iconStyle]}>
-          <MaterialIcons name="group-add" size={36} color={Colors.light.primary} />
-        </Animated.View>
->>>>>>> origin:app/(game)/create-group.tsx
-      </View>
-        
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Create Trip Group</Text>
+          <Animated.View style={[styles.iconContainer, iconStyle]}>
+            <MaterialIcons
+              name="group-add"
+              size={36}
+              color={Colors.light.primary}
+            />
+          </Animated.View>
+        </View>
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Your Name</Text>
           <View style={styles.inputWrapper}>
-            <MaterialIcons name="person" size={24} color={Colors.light.primary} />
+            <MaterialIcons
+              name="person"
+              size={24}
+              color={Colors.light.primary}
+            />
             <TextInput
               style={styles.input}
               value={name}
@@ -220,7 +188,8 @@ export default function CreateGroup() {
           </View>
           {startDate && endDate && (
             <Text style={styles.periodText}>
-              Selected period: {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+              Selected period: {new Date(startDate).toLocaleDateString()} -{' '}
+              {new Date(endDate).toLocaleDateString()}
             </Text>
           )}
         </View>

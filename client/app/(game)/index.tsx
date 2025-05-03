@@ -1,22 +1,16 @@
-<<<<<<< HEAD:client/app/(game)/index.tsx
 import {
   View,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
-import React from 'react';
-=======
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import React, { useEffect } from 'react';
->>>>>>> origin:app/(game)/index.tsx
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
 import PrimaryButton from '@/components/PrimaryButton';
-<<<<<<< HEAD:client/app/(game)/index.tsx
-=======
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
@@ -32,7 +26,6 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
->>>>>>> origin:app/(game)/index.tsx
 
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
@@ -54,15 +47,22 @@ export default function MainScreen() {
         damping: 12,
         stiffness: 100,
       }),
-      withDelay(1000, 
+      withDelay(
+        1000,
         withSequence(
-          withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.05, {
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+          }),
           withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
         )
       )
     );
     titleOpacity.value = withDelay(400, withTiming(1, { duration: 800 }));
-    buttonContainerOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
+    buttonContainerOpacity.value = withDelay(
+      800,
+      withTiming(1, { duration: 800 })
+    );
   }, []);
 
   useEffect(() => {
@@ -87,7 +87,11 @@ export default function MainScreen() {
   const buttonContainerStyle = useAnimatedStyle(() => ({
     opacity: buttonContainerOpacity.value,
     transform: [
-      { translateY: withTiming(buttonContainerOpacity.value * -20, { duration: 800 }) },
+      {
+        translateY: withTiming(buttonContainerOpacity.value * -20, {
+          duration: 800,
+        }),
+      },
     ],
   }));
 
@@ -115,46 +119,26 @@ export default function MainScreen() {
         style={[styles.logo, logoStyle]}
         contentFit="contain"
       />
-<<<<<<< HEAD:client/app/(game)/index.tsx
-      <Text style={styles.text}>SkyMatch</Text>
-      {showPopup && (
-        <View style={styles.popup}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setShowPopup(false)}
-          >
-            <Text style={styles.closeButtonText}>×</Text>
-          </TouchableOpacity>
-          <Text style={styles.popupText}>Enter your name:</Text>
-=======
-      
-      <Animated.Text style={[styles.text, titleStyle]}>
-        SkyMatch
-      </Animated.Text>
+      <Animated.Text style={[styles.text, titleStyle]}>SkyMatch</Animated.Text>
 
-      <Animated.View style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}>
-        <TouchableOpacity 
-          style={styles.closeButton} 
+      <Animated.View
+        style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}
+      >
+        <TouchableOpacity
+          style={styles.closeButton}
           onPress={() => setShowPopup(false)}
         >
           <MaterialIcons name="close" size={24} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.popupTitle}>Join a Group</Text>
-        
+
         <View style={styles.inputContainer}>
           <MaterialIcons name="person" size={24} color={Colors.light.primary} />
->>>>>>> origin:app/(game)/index.tsx
           <TextInput
             style={styles.input}
             value={userName}
             onChangeText={setUserName}
-<<<<<<< HEAD:client/app/(game)/index.tsx
-            placeholder="Name"
-            placeholderTextColor={Colors.light.placeholder}
-          />
-          <Text style={styles.popupText}>Enter Group Code:</Text>
-=======
             placeholder="Enter your name"
             placeholderTextColor={Colors.light.placeholder}
           />
@@ -162,44 +146,32 @@ export default function MainScreen() {
 
         <View style={styles.inputContainer}>
           <MaterialIcons name="groups" size={24} color={Colors.light.primary} />
->>>>>>> origin:app/(game)/index.tsx
           <TextInput
             style={styles.input}
             value={groupCode}
             onChangeText={setGroupCode}
-<<<<<<< HEAD:client/app/(game)/index.tsx
-            placeholder="Group Code"
-            placeholderTextColor={Colors.light.placeholder}
-          />
-          <PrimaryButton
-            label="Join"
-            onPress={handleConfirmGroupCode}
-            disabled={!userName || !groupCode}
-          />
-        </View>
-      )}
-      <View style={[styles.buttonContainer, showPopup && styles.dimmed]}>
-        <PrimaryButton
-          label="Create Group"
-          onPress={handleCreateGroup}
-=======
             placeholder="Enter group code"
             placeholderTextColor={Colors.light.placeholder}
           />
         </View>
 
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleConfirmGroupCode} 
+        <PrimaryButton
+          label="Join Group"
+          onPress={handleConfirmGroupCode}
           disabled={!userName || !groupCode}
         />
       </Animated.View>
 
-      <Animated.View style={[styles.buttonContainer, buttonContainerStyle, showPopup && styles.dimmed]}>
-        <PrimaryButton 
-          label="Create Group" 
-          onPress={handleCreateGroup} 
->>>>>>> origin:app/(game)/index.tsx
+      <Animated.View
+        style={[
+          styles.buttonContainer,
+          buttonContainerStyle,
+          showPopup && styles.dimmed,
+        ]}
+      >
+        <PrimaryButton
+          label="Create Group"
+          onPress={handleCreateGroup}
           disabled={showPopup}
         />
         <PrimaryButton

@@ -13,32 +13,12 @@ const screenWidth = Dimensions.get('window').width;
 
 export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
   return (
-<<<<<<< HEAD:client/components/GroupMemberCard.tsx
-    <View style={styles.card}>
-      <Ionicons
-        name="person"
-        size={22}
-        color="black"
-        style={styles.personIcon}
-      />
-
-      <Text style={styles.name}>{name}</Text>
-
-      {isHost && (
-        <MaterialCommunityIcons
-          name="crown"
-          size={24}
-          color="black"
-          style={styles.crown}
-        />
-      )}
-=======
     <View style={styles.cardContainer}>
       <View style={styles.card}>
         <View style={styles.leftSection}>
-          <Ionicons 
-            name="person" 
-            size={22} 
+          <Ionicons
+            name="person"
+            size={22}
             color={Colors.light.neutralDark}
             style={styles.personIcon}
           />
@@ -47,16 +27,15 @@ export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
 
         {isHost && (
           <View style={styles.hostBadge}>
-            <MaterialCommunityIcons 
-              name="crown" 
-              size={16} 
+            <MaterialCommunityIcons
+              name="crown"
+              size={16}
               color={Colors.light.background}
             />
             <Text style={styles.hostText}>Host</Text>
           </View>
         )}
       </View>
->>>>>>> origin:components/GroupMemberCard.tsx
     </View>
   );
 };
@@ -70,11 +49,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-<<<<<<< HEAD:client/components/GroupMemberCard.tsx
-    backgroundColor: '#ffffff',
-=======
     backgroundColor: '#FEFEFF',
->>>>>>> origin:components/GroupMemberCard.tsx
     borderRadius: 12,
     padding: 12,
     ...Platform.select({
@@ -107,15 +82,6 @@ const styles = StyleSheet.create({
     color: Colors.light.primaryText,
     flex: 1,
   },
-<<<<<<< HEAD:client/components/GroupMemberCard.tsx
-  personIcon: {
-    marginRight: 10,
-    color: Colors.light.neutralDark,
-  },
-  crown: {
-    marginLeft: 6,
-    color: '#FFD700',
-=======
   hostBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,6 +95,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
->>>>>>> origin:components/GroupMemberCard.tsx
   },
 });
