@@ -1,337 +1,115 @@
-const WebSocket = require('ws');
-const { v4: uuidv4 } = require('uuid');
-const dotenv = require('dotenv');
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
-dotenv.config();
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-const port = process.env.PORT || 8080;
-const wss = new WebSocket.Server({ port });
+const lobbies = {};
+const socketToLobby = {}; // Keep track of which socket is in which lobby
 
-// In-memory storage
-const connections = new Map(); // playerId -> { ws, lobbyCode }
-const lobbies = new Map(); // lobbyCode -> Lobby
-
-function generateLobbyCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let code;
-  do {
-    code = Array(6)
-      .fill()
-      .map(() => chars[Math.floor(Math.random() * chars.length)])
-      .join('');
-  } while (lobbies.has(code));
+function generateLobbyCode(length = 6) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
   return code;
 }
 
-function broadcast(lobbyCode, message, excludePlayerId = null) {
-  const lobby = lobbies.get(lobbyCode);
-  if (!lobby) return;
+io.on('connection', (socket) => {
+  console.log('a user connected', socket.id);
 
-  Object.entries(lobby.players).forEach(([playerId, player]) => {
-    if (
-      playerId !== excludePlayerId &&
-      player.ws.readyState === WebSocket.OPEN
-    ) {
-      player.ws.send(JSON.stringify(message));
+  socket.on('createLobby', (data, callback) => {
+    const lobbyCode = generateLobbyCode();
+    const { name } = data;
+
+    // Create the lobby with the host as first member
+    lobbies[lobbyCode] = {
+      host: socket.id,
+      members: [{ id: socket.id, name, isHost: true }],
+      lobbyCode,
+    };
+
+    // Associate this socket with the lobby
+    socketToLobby[socket.id] = lobbyCode;
+
+    console.log('Lobby created:', lobbyCode);
+    callback({
+      success: true,
+      lobbyCode,
+      members: lobbies[lobbyCode].members,
+    });
+  });
+
+  socket.on('storeLobbyCode', (data) => {
+    const { lobbyCode } = data;
+    if (lobbies[lobbyCode]) {
+      socketToLobby[socket.id] = lobbyCode;
+      console.log(`Socket ${socket.id} associated with lobby ${lobbyCode}`);
     }
   });
-}
 
-function handleDisconnect(playerId) {
-  const connection = connections.get(playerId);
-  if (!connection) return;
-
-  const { lobbyCode } = connection;
-  if (lobbyCode) {
-    const lobby = lobbies.get(lobbyCode);
-    if (lobby) {
-      delete lobby.players[playerId];
-
-      // If it was the host that disconnected, try to promote someone else
-      if (lobby.hostId === playerId) {
-        const newHost = Object.keys(lobby.players)[0];
-        if (newHost) {
-          lobby.hostId = newHost;
-          lobby.players[newHost].isHost = true;
-          broadcast(lobbyCode, {
-            type: 'hostChanged',
-            newHostId: newHost,
-          });
-        }
-      }
-
-      // Broadcast player left
-      broadcast(lobbyCode, {
-        type: 'playerLeft',
-        playerId,
-      });
-
-      // Clean up empty lobbies
-      if (Object.keys(lobby.players).length === 0) {
-        lobbies.delete(lobbyCode);
-      }
+  socket.on('getLobbyState', (callback) => {
+    const lobbyCode = socketToLobby[socket.id];
+    if (lobbyCode && lobbies[lobbyCode]) {
+      console.log(`Sending lobby state for ${lobbyCode}:`, lobbies[lobbyCode]);
+      callback(lobbies[lobbyCode]);
+    } else {
+      callback({ success: false, message: 'Lobby not found' });
     }
-  }
-
-  connections.delete(playerId);
-}
-
-function checkAllAnswered(lobby, questionId) {
-  const playerCount = Object.keys(lobby.players).length;
-  const answersCount = Object.keys(lobby.answers[questionId] || {}).length;
-  return answersCount === playerCount;
-}
-
-function startQuestionTimer(lobby, questionId) {
-  if (lobby.currentQuestion?.timer) {
-    clearTimeout(lobby.currentQuestion.timer.timeout);
-  }
-
-  lobby.currentQuestion = {
-    id: questionId,
-    timer: {
-      questionId,
-      startTime: Date.now(),
-      timeout: setTimeout(() => {
-        // Time's up - move to next question or phase
-        processQuestionEnd(lobby);
-      }, 15000), // 15 seconds
-    },
-  };
-
-  // Broadcast question start
-  broadcast(lobby.code, {
-    type: 'questionStart',
-    questionId,
-    timeRemaining: 15000,
   });
-}
 
-function processQuestionEnd(lobby) {
-  if (!lobby.currentQuestion) return;
-
-  const { id: questionId } = lobby.currentQuestion;
-
-  if (lobby.phase === 'personal') {
-    // Check if all personal questions are done
-    if (checkAllAnswered(lobby, questionId)) {
-      lobby.phase = 'preference';
-      broadcast(lobby.code, { type: 'phaseChanged', phase: 'preference' });
-      // Start first preference question...
-    }
-  } else if (lobby.phase === 'preference') {
-    // Calculate vote results
-    const votes = lobby.votes[questionId] || {};
-    const counts = {};
-    Object.values(votes).forEach((vote) => {
-      counts[vote] = (counts[vote] || 0) + 1;
-    });
-
-    const winningOption = Object.entries(counts).reduce((a, b) =>
-      a[1] > b[1] ? a : b
-    )[0];
-
-    broadcast(lobby.code, {
-      type: 'tally',
-      questionId,
-      winningOption,
-      counts,
-    });
-
-    // If all preference questions done, move to results
-    const allPreferenceQuestionsAnswered = Object.keys(lobby.votes).length >= 5; // Assuming 5 preference questions
-    if (allPreferenceQuestionsAnswered) {
-      lobby.phase = 'results_processing';
-      broadcast(lobby.code, {
-        type: 'phaseChanged',
-        phase: 'results_processing',
+  socket.on('joinLobby', (data, callback) => {
+    const { lobbyCode } = data;
+    if (lobbies[lobbyCode]) {
+      lobbies[lobbyCode].members.push({
+        id: socket.id,
+        name: data.name || 'Guest',
+        isHost: false,
       });
 
-      // Simulate async trip planning
-      setTimeout(() => {
-        broadcast(lobby.code, {
-          type: 'results',
-          trips: [
-            { title: 'Beach Paradise', imageUrl: 'beach.jpg', score: 0.9 },
-            {
-              title: 'Mountain Adventure',
-              imageUrl: 'mountain.jpg',
-              score: 0.8,
-            },
-            { title: 'City Explorer', imageUrl: 'city.jpg', score: 0.7 },
-          ],
-        });
-      }, 2000);
+      // Associate this socket with the lobby
+      socketToLobby[socket.id] = lobbyCode;
+
+      console.log(`Socket ${socket.id} joined lobby ${lobbyCode}`);
+      callback({ success: true, lobbyCode });
+
+      // Notify all members in the lobby about the update
+      io.emit('lobbyData', lobbies[lobbyCode]);
+    } else {
+      callback({ success: false, message: 'Lobby not found' });
     }
-  }
-}
+  });
 
-wss.on('connection', (ws) => {
-  const playerId = uuidv4();
-  connections.set(playerId, { ws, lobbyCode: null });
+  socket.on('disconnect', () => {
+    console.log('user disconnected', socket.id);
 
-  ws.on('message', (data) => {
-    let message;
-    try {
-      message = JSON.parse(data);
-    } catch (e) {
-      ws.send(
-        JSON.stringify({ type: 'error', message: 'Invalid message format' })
+    // Clean up the socket's lobby association
+    const lobbyCode = socketToLobby[socket.id];
+    if (lobbyCode && lobbies[lobbyCode]) {
+      // Remove the member from the lobby
+      lobbies[lobbyCode].members = lobbies[lobbyCode].members.filter(
+        (member) => member.id !== socket.id
       );
-      return;
-    }
 
-    const connection = connections.get(playerId);
-    const lobbyCode = connection?.lobbyCode;
-    const lobby = lobbyCode ? lobbies.get(lobbyCode) : null;
-
-    switch (message.type) {
-      case 'create': {
-        const code = generateLobbyCode();
-        const lobby = {
-          code,
-          hostId: playerId,
-          phase: 'waiting',
-          players: {
-            [playerId]: { ws, name: message.name, isHost: true },
-          },
-          answers: {},
-          votes: {},
-          currentQuestion: null,
-        };
-
-        lobbies.set(code, lobby);
-        connections.get(playerId).lobbyCode = code;
-
-        ws.send(
-          JSON.stringify({
-            type: 'created',
-            lobbyCode: code,
-            playerId,
-            players: [
-              {
-                playerId,
-                name: message.name,
-                isHost: true,
-              },
-            ],
-          })
-        );
-        break;
-      }
-
-      case 'join': {
-        const lobby = lobbies.get(message.lobbyCode);
-        if (!lobby) {
-          ws.send(
-            JSON.stringify({
-              type: 'error',
-              message: 'Lobby not found',
-            })
-          );
-          return;
-        }
-
-        if (lobby.phase !== 'waiting') {
-          ws.send(
-            JSON.stringify({
-              type: 'error',
-              message: 'Game already started',
-            })
-          );
-          return;
-        }
-
-        lobby.players[playerId] = {
-          ws,
-          name: message.name,
-          isHost: false,
-        };
-        connections.get(playerId).lobbyCode = message.lobbyCode;
-
-        // Send current lobby state to new player
-        ws.send(
-          JSON.stringify({
-            type: 'joined',
-            lobbyCode: message.lobbyCode,
-            playerId,
-            players: Object.entries(lobby.players).map(([id, p]) => ({
-              playerId: id,
-              name: p.name,
-              isHost: p.isHost,
-            })),
-          })
-        );
-
-        // Broadcast new player to others
-        broadcast(
-          message.lobbyCode,
-          {
-            type: 'playerJoined',
-            player: {
-              playerId,
-              name: message.name,
-              isHost: false,
-            },
-          },
-          playerId
-        );
-        break;
-      }
-
-      case 'startGame': {
-        if (!lobby || lobby.hostId !== playerId) {
-          ws.send(
-            JSON.stringify({
-              type: 'error',
-              message: 'Not authorized',
-            })
-          );
-          return;
-        }
-
-        lobby.phase = 'personal';
-        broadcast(lobbyCode, { type: 'phaseChanged', phase: 'personal' });
-        // Start first question...
-        startQuestionTimer(lobby, 'personal_1');
-        break;
-      }
-
-      case 'answer': {
-        if (!lobby || !message.questionId) return;
-
-        if (!lobby.answers[message.questionId]) {
-          lobby.answers[message.questionId] = {};
-        }
-
-        lobby.answers[message.questionId][playerId] = message.answer;
-
-        if (checkAllAnswered(lobby, message.questionId)) {
-          processQuestionEnd(lobby);
-        }
-        break;
-      }
-
-      case 'vote': {
-        if (!lobby || !message.questionId) return;
-
-        if (!lobby.votes[message.questionId]) {
-          lobby.votes[message.questionId] = {};
-        }
-
-        lobby.votes[message.questionId][playerId] = message.answer;
-
-        if (checkAllAnswered(lobby, message.questionId)) {
-          processQuestionEnd(lobby);
-        }
-        break;
+      // If it was the host, delete the lobby
+      if (lobbies[lobbyCode].host === socket.id) {
+        delete lobbies[lobbyCode];
+        console.log(`Lobby ${lobbyCode} deleted because host disconnected`);
+      } else {
+        // Notify remaining members about the update
+        io.emit('lobbyData', lobbies[lobbyCode]);
       }
     }
-  });
 
-  ws.on('close', () => {
-    handleDisconnect(playerId);
+    // Clean up the socket's lobby association
+    delete socketToLobby[socket.id];
   });
 });
 
-console.log(`WebSocket server is running on port ${port}`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

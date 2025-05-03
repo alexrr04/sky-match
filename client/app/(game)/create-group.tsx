@@ -4,13 +4,15 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import PrimaryButton from '@/components/PrimaryButton';
 import { Colors } from '@/constants/Colors';
-import { router } from 'expo-router';
+import { useNavigate } from '@/hooks/useNavigate';
+import { socket } from '@/utils/socket';
 
 export default function CreateGroup() {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
+  const { navigateTo } = useNavigate();
 
   const onDayPress = (day: DateData) => {
     if (!startDate || (startDate && endDate)) {
@@ -41,7 +43,6 @@ export default function CreateGroup() {
       const range: MarkedDates = {};
       let currentDate = new Date(startDate);
       const endDateObj = new Date(dateString);
-
       while (currentDate <= endDateObj) {
         const dateStr = currentDate.toISOString().split('T')[0];
         if (dateStr === startDate) {
@@ -73,8 +74,22 @@ export default function CreateGroup() {
 
   const handleCreate = () => {
     if (name.trim() && startDate && endDate) {
-      // TODO: Handle group creation logic
-      router.push('/(game)/lobby');
+      // Emit socket event to create the lobby
+      console.log('Creating lobby with name:', name);
+      socket.emit(
+        'createLobby',
+        { name, startDate, endDate },
+        (response: any) => {
+          if (response && response.lobbyCode) {
+            console.log('Lobby created with code:', response.lobbyCode);
+            // Store the lobby code for future use
+            socket.emit('storeLobbyCode', { lobbyCode: response.lobbyCode });
+            navigateTo('lobby');
+          } else {
+            console.error('Failed to create lobby', response);
+          }
+        }
+      );
     }
   };
 
