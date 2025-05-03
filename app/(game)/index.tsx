@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.light.text,
+    color: Colors.light.primaryText,
     marginBottom: 40,
   },
   buttonContainer: {

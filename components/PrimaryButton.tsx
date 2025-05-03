@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 interface PrimaryButtonProps {
   label: string;
@@ -16,14 +17,14 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({ label, onPress }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: Colors.light.primary,
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginBottom: 20,
   },
   text: {
-    color: '#fff',
+    color: Colors.light.buttonText,
     fontSize: 24,
     fontWeight: 'bold',
   },
