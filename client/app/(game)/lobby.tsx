@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, Pressable, Clipboard } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Pressable,
+  Clipboard,
+  TouchableOpacity,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { MaterialIcons } from '@expo/vector-icons';
 import { socket } from '@/utils/socket';
 
 // Define a TypeScript interface for a participant
@@ -18,6 +28,8 @@ interface LobbyData {
   lobbyCode: string;
   members: Participant[];
 }
+
+const { width, height } = Dimensions.get('window');
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -70,15 +82,49 @@ export default function LobbyScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Group Code Section */}
-      <View style={styles.groupCodeContainer}>
-        <ThemedText style={styles.groupCodeLabel}>Group Code:</ThemedText>
-        <ThemedText style={styles.groupCodeValue}>
-          {lobbyData.lobbyCode}
-        </ThemedText>
-        <Pressable style={styles.copyButton} onPress={handleCopyCode}>
-          <FontAwesome6 name="copy" size={20} color="#3B82F6" />
-        </Pressable>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigateTo('/create-group')}
+      >
+        <MaterialIcons
+          name="arrow-back"
+          size={28}
+          color={Colors.light.primary}
+        />
+      </TouchableOpacity>
+      {/* Group Code section */}
+      <View style={styles.headerSection}>
+        <View style={styles.groupCodeContainer}>
+          <View style={styles.codeSection}>
+            <View>
+              <ThemedText style={styles.groupCodeLabel}>Group Code</ThemedText>
+              <ThemedText style={styles.groupCodeValue}>
+                {lobbyData?.lobbyCode}
+              </ThemedText>
+            </View>
+            <Pressable style={styles.copyButton} onPress={handleCopyCode}>
+              <FontAwesome6
+                name="copy"
+                size={18}
+                color={Colors.light.primary}
+              />
+            </Pressable>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.infoSection}>
+            <View style={styles.infoItem}>
+              <FontAwesome6
+                name="users"
+                size={14}
+                color={Colors.light.primary}
+              />
+              <ThemedText style={styles.infoText}>
+                {participants.length} Member
+                {participants.length !== 1 ? 's' : ''}
+              </ThemedText>
+            </View>
+          </View>
+        </View>
       </View>
 
       {/* Members List */}
@@ -106,7 +152,7 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: height * 0.1, // Increased padding for more space
     paddingHorizontal: 20,
     backgroundColor: Colors.light.background,
     position: 'relative',
@@ -117,49 +163,52 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.primaryText,
   },
-  groupCodeContainer: {
-    marginBottom: 30,
-    backgroundColor: '#EFF6FF',
-    padding: 20,
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: -20,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    shadowColor: '#60A5FA',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    position: 'relative',
-  },
-  copyButton: {
+  backButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: height * 0.02,
+    left: width * 0.05,
+    zIndex: 1,
     padding: 8,
+    backgroundColor: Colors.light.secondary + '20',
     borderRadius: 8,
+  },
+  headerSection: {
+    marginBottom: 30,
+    paddingHorizontal: 20,
+    marginTop: 0, // Added top margin
+  },
+  groupCodeContainer: {
     backgroundColor: Colors.light.background,
-    shadowColor: '#60A5FA',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.light.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  codeSection: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   groupCodeLabel: {
     fontSize: 14,
-    color: '#3B82F6',
-    textAlign: 'center',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    color: Colors.light.primary,
+    marginBottom: 4,
     fontWeight: '600',
   },
   groupCodeValue: {
-    fontSize: 38,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#1E40AF',
+    color: '#1E40AF', // Dark blue
     letterSpacing: 1.5,
     paddingVertical: 8,
   },

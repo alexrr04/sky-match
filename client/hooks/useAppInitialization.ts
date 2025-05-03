@@ -1,49 +1,64 @@
 import { useState, useEffect } from 'react';
-import * as Font from 'expo-font';
+import { Image } from 'react-native';
+import { Images } from '@/constants/ImageAssets';
+import { quizQuestions } from '@/constants/QuizQuestions';
 import * as SplashScreen from 'expo-splash-screen';
 
-import { createLogger } from '@/utils/logger';
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
-const logger = createLogger('AppSetup');
-
-function initializeSplashScreen() {
-  SplashScreen.preventAutoHideAsync()
-    .then(() => logger.started('Preventing auto-hide of splash screen...'))
-    .catch((error) =>
-      logger.error(`Failed to prevent auto-hide of splash screen:`, error)
-    );
-}
-
-const fetchFonts = () =>
-  Font.loadAsync({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+const preloadImage = async (imageKey: string, image: any) => {
+  return new Promise((resolve, reject) => {
+    const uri = Image.resolveAssetSource(image).uri;
+    Image.prefetch(uri)
+      .then(() => {
+        console.log(`Preloaded: ${imageKey}`);
+        resolve(true);
+      })
+      .catch((error) => {
+        console.warn(`Failed to preload ${imageKey}:`, error);
+        // Resolve anyway to not block the app
+        resolve(false);
+      });
   });
+};
 
-export function useAppInitialization() {
+export const useAppInitialization = () => {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
     async function prepare() {
       try {
-        initializeSplashScreen();
-        await fetchFonts();
-        logger.success('Fonts loaded successfully.');
+        // Get unique images from all questions
+        const quizImages = new Set(quizQuestions.flatMap(question => [
+          question.optionLeft.image,
+          question.optionRight.image
+        ]));
+
+        // Pre-load all images in parallel
+        const preloadPromises = [
+          // Load quiz images
+          ...Array.from(quizImages).map(imageKey => 
+            preloadImage(imageKey, Images[imageKey])
+          ),
+          // Load any additional app images if needed
+          // Add them here if necessary
+        ];
+
+        // Wait for all images to be loaded
+        await Promise.all(preloadPromises);
+        console.log('All app resources loaded successfully');
       } catch (e) {
-        logger.error(`Error during app initialization: ${e}`);
+        console.warn('Error loading app resources:', e);
       } finally {
+        // Set app as ready even if some images failed
         setAppIsReady(true);
+        await SplashScreen.hideAsync().catch(console.warn);
       }
     }
 
     prepare();
   }, []);
 
-  const onLayoutRootView = async () => {
-    if (appIsReady) {
-      await SplashScreen.hideAsync();
-      logger.success('Splash screen hidden successfully.');
-    }
-  };
-
-  return { appIsReady, onLayoutRootView };
-}
+  return appIsReady;
+};
