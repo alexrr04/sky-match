@@ -1,74 +1,63 @@
-import { View, StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { useNavigate } from '@/hooks/useNavigate';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 
-export default function InGameScreen() {
+import { useNavigate } from '@/hooks/useNavigate';
+import { useTripStateReactive } from '@/state/stores/tripState/tripSelector';
+import ProgressBar from '@/components/ProgressBar';
+import Phase1Component from '@/components/Phase1Component';
+import Phase2Component from '@/components/Phase2Component';
+
+const InGameScreen = () => {
+  // Get state values using selector hooks
+  const phase = useTripStateReactive('phase');
+  const progress = useTripStateReactive('progress');
+
+  // Custom navigator
   const { navigateTo } = useNavigate();
 
-  const handleEndGame = () => {
-    navigateTo('/end-game');
-  };
+  // Navigate to EndScreen when all questions are answered
+  useEffect(() => {
+    if (progress >= 1) {
+      navigateTo('end-game');
+    }
+  }, [progress, navigateTo]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>Game in Progress</ThemedText>
-        <ThemedText style={styles.timer}>Time: 00:00</ThemedText>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.progressBarContainer}>
+        {/* Progress bar component */}
+        <ProgressBar progress={progress} />
       </View>
 
-      <View style={styles.gameArea}>
-        <ThemedText style={styles.gameText}>Game Content Here</ThemedText>
+      {/* Main content area: render phase components */}
+      <View style={styles.phaseContainer}>
+        {phase === 1 && <Phase1Component />}
+        {phase === 2 && <Phase2Component />}
       </View>
-
-      <View style={styles.footer}>
-        <ThemedText style={styles.actionButton} onPress={handleEndGame}>
-          End Game
-        </ThemedText>
-      </View>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+  progressBarContainer: {
+    marginTop: 60,
   },
-  title: {
-    fontSize: 24,
-  },
-  timer: {
-    fontSize: 18,
-  },
-  gameArea: {
+  phaseContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginVertical: 20,
-  },
-  gameText: {
-    fontSize: 18,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  actionButton: {
-    fontSize: 18,
-    padding: 12,
-    backgroundColor: '#FF3B30',
-    color: '#FFFFFF',
-    borderRadius: 8,
-    minWidth: 150,
-    textAlign: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
+
+export default InGameScreen;
