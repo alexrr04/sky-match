@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import {
@@ -73,23 +73,27 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
           <View style={styles.contentContainer}>
             <View style={styles.optionContainer}>
               <View style={styles.optionLeft}>
-                <Ionicons 
-                  name="arrow-back-circle" 
-                  size={32} 
-                  color={Colors.light.accent}
-                  style={{ opacity: 0.8 }}
+                <Image 
+                  source={require('@/assets/images/alex.png')}
+                  style={styles.optionImage}
+                  resizeMode="cover"
                 />
-                <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
+                <View style={styles.textContainer}>
+                  <Ionicons name="arrow-back-circle" size={28} color={Colors.light.accent} />
+                  <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
+                </View>
               </View>
               <View style={styles.divider} />
               <View style={styles.optionRight}>
-                <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
-                <Ionicons 
-                  name="arrow-forward-circle" 
-                  size={32} 
-                  color={Colors.light.primary}
-                  style={{ opacity: 0.8 }}
+                <Image 
+                  source={require('@/assets/images/eric.png')}
+                  style={styles.optionImage}
+                  resizeMode="cover"
                 />
+                <View style={styles.textContainer}>
+                  <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
+                  <Ionicons name="arrow-forward-circle" size={28} color={Colors.light.primary} />
+                </View>
               </View>
             </View>
           </View>
@@ -102,7 +106,7 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
 const styles = StyleSheet.create({
   card: {
     width: width * 0.85,
-    height: height * 0.22,
+    height: height * 0.4,
     backgroundColor: '#fff',
     overflow: 'hidden',
     borderRadius: width * 0.05,
@@ -122,7 +126,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    padding: width * 0.05,
+    padding: width * 0.03,
     justifyContent: 'center',
   },
   divider: {
@@ -130,7 +134,7 @@ const styles = StyleSheet.create({
     height: '70%',
     backgroundColor: Colors.light.secondary,
     opacity: 0.3,
-    marginHorizontal: width * 0.03,
+    marginHorizontal: width * 0.02,
   },
   optionContainer: {
     flex: 1,
@@ -139,30 +143,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionLeft: {
+    flexDirection: 'column',
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 12,
+    justifyContent: 'space-between',
   },
   optionRight: {
+    flexDirection: 'column',
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  optionImage: {
+    width: '100%',
+    height: '80%',
+    borderRadius: width * 0.03,
+    borderWidth: 2,
+    borderColor: Colors.light.secondary,
+  },
+  textContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 12,
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 8,
+    paddingHorizontal: 8,
   },
   optionText: {
-    fontSize: Math.min(width * 0.045, 20),
+    fontSize: Math.min(width * 0.035, 16),
     fontWeight: '600',
-    flex: 1,
+    textAlign: 'center',
   },
   leftText: {
     color: Colors.light.accent,
-    textAlign: 'left',
   },
   rightText: {
     color: Colors.light.primary,
-    textAlign: 'right',
   },
 });
