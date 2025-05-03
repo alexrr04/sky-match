@@ -1,7 +1,9 @@
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, Pressable, Alert, Clipboard } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
+import { FontAwesome6 } from '@expo/vector-icons';
+
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -11,6 +13,11 @@ export default function LobbyScreen() {
   };
 
   const groupCode = 'ABC123';
+
+  const handleCopyCode = () => {
+    Clipboard.setString(groupCode);
+    Alert.alert('Success', 'Group code copied to clipboard!');
+  };
 
   const participants = [
     { id: '1', name: 'Sofia', isHost: true },
@@ -31,6 +38,12 @@ export default function LobbyScreen() {
       <View style={styles.groupCodeContainer}>
         <ThemedText style={styles.groupCodeLabel}>Group Code:</ThemedText>
         <ThemedText style={styles.groupCodeValue}>{groupCode}</ThemedText>
+        <Pressable 
+          style={styles.copyButton}
+          onPress={handleCopyCode}
+        >
+          <FontAwesome6 name="copy" size={20} color="#3B82F6" />
+        </Pressable>
       </View>
 
       {/* Members */}
@@ -66,14 +79,15 @@ const styles = StyleSheet.create({
   },
   groupCodeContainer: {
     marginBottom: 30,
-    backgroundColor: '#EFF6FF', // Light blue background
+    backgroundColor: '#EFF6FF',
     padding: 20,
     paddingVertical: 16,
     borderRadius: 16,
     marginTop: -20,
     borderWidth: 1,
-    borderColor: '#BFDBFE', // Subtle blue border
+    borderColor: '#BFDBFE',
     shadowColor: '#60A5FA',
+    position: 'relative',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -81,6 +95,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  copyButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#60A5FA',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   groupCodeLabel: {
     fontSize: 16,
