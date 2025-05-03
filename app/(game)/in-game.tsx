@@ -2,18 +2,34 @@ import { View, StyleSheet, Text } from 'react-native';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Button } from '@react-navigation/elements';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { useLobbyStore } from '@/state/stores/lobbyStore';
 
 // Mock data for testing
 const MOCK_PLAYERS = [
   { id: '1', name: 'Alex' },
   { id: '2', name: 'Maria' },
   { id: '3', name: 'John' },
-  { id: '4', name: 'Sarah' },
-  { id: '5', name: 'Mike' },
+  { id: '4', name: 'Sophia' },
+  { id: '5', name: 'Michael' },
+  { id: '6', name: 'Emma' },
+  { id: '7', name: 'Liam' },
+  { id: '8', name: 'Olivia' },
+  { id: '9', name: 'Noah' },
+  { id: '10', name: 'Ava' },
 ];
 
 export default function InGameScreen() {
   const { navigateTo } = useNavigate();
+  const playersNames = useLobbyStore((state) => state.playersNames);
+
+  // Combine mock and state players
+  const allPlayers = [
+    ...MOCK_PLAYERS,
+    ...playersNames.map((name, idx) => ({
+      id: `state-${idx}`,
+      name,
+    })),
+  ];
 
   const handleEndGame = () => {
     navigateTo('/end-game');
@@ -23,12 +39,12 @@ export default function InGameScreen() {
     <View style={styles.container}>
       {/* Players Plaza - Background */}
       <View style={styles.plazaContainer}>
-        {MOCK_PLAYERS.map((player, index) => (
+        {allPlayers.map((player, index) => (
           <PlayerAvatar
             key={player.id}
             name={player.name}
             index={index}
-            totalPlayers={MOCK_PLAYERS.length}
+            totalPlayers={allPlayers.length}
           />
         ))}
       </View>
@@ -44,8 +60,6 @@ export default function InGameScreen() {
         <View style={styles.gameArea}>
           <Text style={styles.placeholderText}>Game Content</Text>
         </View>
-
-        <Button onPress={handleEndGame}>End Game</Button>
       </View>
     </View>
   );
@@ -69,13 +83,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   gameArea: {
-    zIndex: 1,
-    flex: 1,
+    height: 200,
     backgroundColor: '#f0f0f0',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    zIndex: 0,
   },
   plazaContainer: {
     position: 'absolute',
@@ -86,6 +100,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
+    flex: 1,
   },
   placeholderText: {
     fontSize: 18,
