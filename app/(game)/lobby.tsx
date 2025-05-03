@@ -1,4 +1,4 @@
-import { View, StyleSheet, FlatList, Pressable, Alert, Clipboard } from 'react-native';
+import { View, StyleSheet, FlatList, Pressable, Clipboard } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
@@ -16,7 +16,6 @@ export default function LobbyScreen() {
 
   const handleCopyCode = () => {
     Clipboard.setString(groupCode);
-    Alert.alert('Success', 'Group code copied to clipboard!');
   };
 
   const participants = [
