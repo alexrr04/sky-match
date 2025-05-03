@@ -14,17 +14,21 @@ const screenWidth = Dimensions.get('window').width;
 export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
   return (
     <View style={styles.card}>
-     
-      <Ionicons name="person" size={22} color="black" style={styles.personIcon} />
+      <Ionicons
+        name="person"
+        size={22}
+        color="black"
+        style={styles.personIcon}
+      />
 
       <Text style={styles.name}>{name}</Text>
 
       {isHost && (
-        <MaterialCommunityIcons 
-          name="crown" 
-          size={24} 
-          color="black" 
-          style={styles.crown} 
+        <MaterialCommunityIcons
+          name="crown"
+          size={24}
+          color="black"
+          style={styles.crown}
         />
       )}
     </View>
@@ -35,7 +39,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
@@ -51,14 +55,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.light.primaryText,
-    flex: 1, 
+    flex: 1,
   },
   personIcon: {
-    marginRight: 10,  
+    marginRight: 10,
     color: Colors.light.neutralDark,
   },
   crown: {
     marginLeft: 6,
-    color: '#FFD700', 
+    color: '#FFD700',
   },
 });

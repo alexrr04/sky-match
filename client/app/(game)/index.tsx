@@ -1,10 +1,15 @@
-import { View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
 import PrimaryButton from '@/components/PrimaryButton';
-import { Button } from '@react-navigation/elements';
 
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
@@ -33,41 +38,41 @@ export default function MainScreen() {
       />
       <Text style={styles.text}>SkyMatch</Text>
       {showPopup && (
-          <View style={styles.popup}>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setShowPopup(false)}>
-              <Text style={styles.closeButtonText}>×</Text>
-            </TouchableOpacity>
-            <Text style={styles.popupText}>Enter your name:</Text>
-            <TextInput
-              style={styles.input}
-              value={userName}
-              onChangeText={setUserName}
-              placeholder="Name"
+        <View style={styles.popup}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setShowPopup(false)}
+          >
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
+          <Text style={styles.popupText}>Enter your name:</Text>
+          <TextInput
+            style={styles.input}
+            value={userName}
+            onChangeText={setUserName}
+            placeholder="Name"
             placeholderTextColor={Colors.light.placeholder}
           />
-            <Text style={styles.popupText}>Enter Group Code:</Text>
-            <TextInput
-              style={styles.input}
-              value={groupCode}
-              onChangeText={setGroupCode}
-              placeholder="Group Code"
+          <Text style={styles.popupText}>Enter Group Code:</Text>
+          <TextInput
+            style={styles.input}
+            value={groupCode}
+            onChangeText={setGroupCode}
+            placeholder="Group Code"
             placeholderTextColor={Colors.light.placeholder}
           />
-            <PrimaryButton 
-              label="Confirm" 
-              onPress={handleConfirmGroupCode} 
-            />
-          </View>
+          <PrimaryButton label="Confirm" onPress={handleConfirmGroupCode} />
+        </View>
       )}
       <View style={[styles.buttonContainer, showPopup && styles.dimmed]}>
-        <PrimaryButton 
-          label="Create Group" 
-          onPress={handleCreateGroup} 
+        <PrimaryButton
+          label="Create Group"
+          onPress={handleCreateGroup}
           disabled={showPopup}
         />
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleJoinGroup} 
+        <PrimaryButton
+          label="Join Group"
+          onPress={handleJoinGroup}
           disabled={showPopup}
         />
       </View>
