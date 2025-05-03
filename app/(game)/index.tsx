@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     elevation: 5,
+    zIndex: 2,
   },
   popupText: {
     fontSize: 18,
