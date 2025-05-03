@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import PrimaryButton from '@/components/PrimaryButton';
 import { Colors } from '@/constants/Colors';
 import { router } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import Animated, { 
+  useAnimatedStyle, 
+  withRepeat, 
+  withSequence, 
+  withTiming,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
+
+const { width, height } = Dimensions.get('window');
 
 export default function CreateGroup() {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
+
+  // Animation values
+  const iconRotate = useSharedValue(0);
+
+  React.useEffect(() => {
+    // Rotate icon animation
+    iconRotate.value = withRepeat(
+      withSequence(
+        withSpring(360)
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${iconRotate.value}deg` }]
+  }));
 
   const onDayPress = (day: DateData) => {
     if (!startDate || (startDate && endDate)) {
@@ -30,7 +59,6 @@ export default function CreateGroup() {
       // Complete the selection
       const dateString = day.dateString;
       if (dateString < startDate) {
-        // If end date is before start date, swap them
         setEndDate(startDate);
         setStartDate(dateString);
       } else {
@@ -73,50 +101,59 @@ export default function CreateGroup() {
 
   const handleCreate = () => {
     if (name.trim() && startDate && endDate) {
-      // TODO: Handle group creation logic
       router.push('/(game)/lobby');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Trip Group</Text>
-      
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Your Name</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your name"
-          placeholderTextColor={Colors.light.placeholder}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select trip dates</Text>
-        <View style={styles.calendarContainer}>
-          <Calendar
-            onDayPress={onDayPress}
-            markedDates={markedDates}
-            minDate={new Date().toISOString().split('T')[0]}
-            markingType={'period'}
-            theme={{
-              calendarBackground: '#fff',
-              selectedDayBackgroundColor: Colors.light.primary,
-              selectedDayTextColor: Colors.light.buttonText,
-              todayTextColor: Colors.light.primary,
-              textDisabledColor: Colors.light.disabled,
-              arrowColor: Colors.light.primary,
-            }}
-          />
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Create Trip Group</Text>
+          <Animated.View style={[styles.iconContainer, iconStyle]}>
+            <MaterialIcons name="group-add" size={36} color={Colors.light.primary} />
+          </Animated.View>
         </View>
-        {startDate && endDate && (
-          <Text style={styles.periodText}>
-            Selected period: {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
-          </Text>
-        )}
-      </View>
+        
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Your Name</Text>
+          <View style={styles.inputWrapper}>
+            <MaterialIcons name="person" size={24} color={Colors.light.primary} />
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter your name"
+              placeholderTextColor={Colors.light.placeholder}
+            />
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Select trip dates</Text>
+          <View style={styles.calendarContainer}>
+            <Calendar
+              onDayPress={onDayPress}
+              markedDates={markedDates}
+              minDate={new Date().toISOString().split('T')[0]}
+              markingType={'period'}
+              theme={{
+                calendarBackground: '#fff',
+                selectedDayBackgroundColor: Colors.light.primary,
+                selectedDayTextColor: Colors.light.buttonText,
+                todayTextColor: Colors.light.primary,
+                textDisabledColor: Colors.light.disabled,
+                arrowColor: Colors.light.primary,
+              }}
+            />
+          </View>
+          {startDate && endDate && (
+            <Text style={styles.periodText}>
+              Selected period: {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+            </Text>
+          )}
+        </View>
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
         <PrimaryButton
@@ -132,48 +169,78 @@ export default function CreateGroup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: Colors.light.background,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: width * 0.05,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: height * 0.03,
+  },
   title: {
-    fontSize: 32,
+    fontSize: Math.min(width * 0.08, 32),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    margin: 50,
     textAlign: 'center',
+    marginRight: 10,
+  },
+  iconContainer: {
+    padding: 8,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: height * 0.03,
   },
   label: {
     fontSize: 16,
+    fontWeight: '600',
     color: Colors.light.primaryText,
     marginBottom: 8,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 5,
-    padding: 12,
+    borderRadius: 12,
+    padding: width * 0.04,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  input: {
+    flex: 1,
+    marginLeft: width * 0.03,
     fontSize: 16,
     color: Colors.light.primaryText,
-    borderWidth: 1,
-    borderColor: Colors.light.secondary,
-  },
-  buttonContainer: {
-    marginTop: 20,
   },
   calendarContainer: {
     backgroundColor: '#fff',
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: Colors.light.secondary,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    padding: width * 0.03,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   periodText: {
     fontSize: 14,
     color: Colors.light.primaryText,
     textAlign: 'center',
-    marginTop: 5,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  buttonContainer: {
+    padding: width * 0.05,
+    backgroundColor: Colors.light.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.light.secondary + '40',
   },
 });
