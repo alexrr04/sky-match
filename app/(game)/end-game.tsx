@@ -73,9 +73,16 @@ export default function EndGameScreen() {
               <ThemedText style={styles.cityName}>
                 {destination.city}
               </ThemedText>
-              <ThemedText style={styles.countryName}>
-                {destination.country}
-              </ThemedText>
+              <View style={styles.countryContainer}>
+                <ThemedText style={styles.countryName}>
+                  {destination.country}
+                </ThemedText>
+                <TouchableOpacity onPress={handleDownload}>
+                  <Animated.View style={downloadButtonStyle}>
+                    <MaterialIcons name="file-download" size={20} color={Colors.light.primary} />
+                  </Animated.View>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -123,22 +130,15 @@ export default function EndGameScreen() {
               </View>
             </View>
           </View>
+          
+          <View style={styles.returnButtonContainer}>
+            <PrimaryButton
+              onPress={handleReturnToLobby}
+              label="Return to Lobby"
+            />
+          </View>
         </View>
       </ScrollView>
-      
-      {/* Action Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleDownload}>
-          <Animated.View style={[styles.downloadButton, downloadButtonStyle]}>
-            <MaterialIcons name="file-download" size={24} color={Colors.light.buttonText} />
-            <ThemedText style={styles.downloadText}>Download Summary</ThemedText>
-          </Animated.View>
-        </TouchableOpacity>
-        <PrimaryButton
-          onPress={handleReturnToLobby}
-          label="Return to Lobby"
-        />
-      </View>
     </SafeAreaView>
   );
 }
@@ -248,25 +248,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.primaryText,
   },
-  buttonContainer: {
-    padding: width * 0.05,
-    backgroundColor: Colors.light.background,
-    borderTopWidth: 1,
-    borderTopColor: Colors.light.secondary + '40',
-  },
-  downloadButton: {
+  countryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.light.primary,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    justifyContent: 'space-between',
   },
-  downloadText: {
-    color: Colors.light.buttonText,
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
+  returnButtonContainer: {
+    marginTop: height * 0.03,
+    marginBottom: height * 0.05,
   },
 });
