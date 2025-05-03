@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
 import { router } from 'expo-router';
+import { useTripStore } from '@/state/stores/tripState/tripState';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import Animated, { 
@@ -92,13 +93,20 @@ export default function QuizScreen() {
     })),
   };
 
+  const { addQuizAnswer, transformAndStorePreferences } = useTripStore();
+
   const handleSwipe = (direction: 'left' | 'right') => {
     const selectedOption = direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight;
-    console.log(`Question ${currentQuestion.id}: User chose ${selectedOption.label}`);
+    
+    addQuizAnswer({
+      questionId: currentQuestion.id,
+      choice: direction
+    });
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
+      transformAndStorePreferences();
       router.push('/countdown');
     }
   };

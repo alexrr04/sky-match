@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useNavigate } from '@/hooks/useNavigate';
+import { useTripStore } from '@/state/stores/tripState/tripState';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,8 +15,14 @@ export default function Phase1Quiz() {
 
   const { navigateTo } = useNavigate();
 
+  const { setPhase1Data } = useTripStore();
+
   const handleSubmit = () => {
-    // TODO: Handle form submission
+    setPhase1Data({
+      originAirport: originAirport.trim().toUpperCase(),
+      budget: Number(budget),
+      hasLicense
+    });
     navigateTo('/quiz');
   };
 
