@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigate } from '@/hooks/useNavigate';
@@ -12,12 +13,21 @@ import Animated, {
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 const { width, height } = Dimensions.get('window');
 
 export default function EndGameScreen() {
   const { navigateTo } = useNavigate();
   const backgroundColor = useThemeColor({}, 'background');
+  const confettiRef = useRef<ConfettiCannon>(null);
+
+  useEffect(() => {
+    // Shoot confetti when the screen appears
+    setTimeout(() => {
+      confettiRef.current?.start();
+    }, 100);
+  }, []);
   
   // Animation for download button
   const scale = useSharedValue(1);
@@ -51,6 +61,19 @@ export default function EndGameScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
+      {/* Confetti overlay */}
+      <View style={styles.confettiContainer}>
+        <ConfettiCannon
+          ref={confettiRef}
+          count={200}
+          origin={{x: width/2, y: -50}}
+          autoStart={false}
+          fadeOut={true}
+          fallSpeed={2000}
+          explosionSpeed={350}
+          colors={[Colors.light.primary, Colors.light.accent, Colors.light.secondary]}
+        />
+      </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
           {/* Header */}
@@ -146,6 +169,15 @@ export default function EndGameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+    pointerEvents: 'none',
   },
   scrollView: {
     flex: 1,
