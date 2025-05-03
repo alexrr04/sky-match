@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
@@ -76,7 +76,8 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     width: '100%',
-    marginTop: height * 0.02,
+    marginTop: height * 0.05,
+    paddingHorizontal: width * 0.02,
   },
   progressText: {
     fontSize: 16,
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
   },
   progressBar: {
-    height: 6,
+    height: 8,
     backgroundColor: Colors.light.secondary,
     borderRadius: 3,
     overflow: 'hidden',

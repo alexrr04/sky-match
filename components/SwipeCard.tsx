@@ -62,28 +62,35 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
         { rotate: `${rotation}deg` },
         { scale },
       ],
+      backgroundColor: '#fff',
     };
   });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View 
-          style={[
-            styles.card, 
-            animatedStyle, 
-            { backgroundColor: '#fff' }
-          ]}
->
-          <View style={styles.optionContainer}>
-            <View style={styles.optionLeft}>
-              <Ionicons name="arrow-back-circle" size={24} color={Colors.light.accent} />
-              <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.optionRight}>
-              <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
-              <Ionicons name="arrow-forward-circle" size={24} color={Colors.light.primary} />
+        <Animated.View style={[styles.card, animatedStyle]}>
+          <View style={styles.contentContainer}>
+            <View style={styles.optionContainer}>
+              <View style={styles.optionLeft}>
+                <Ionicons 
+                  name="arrow-back-circle" 
+                  size={32} 
+                  color={Colors.light.accent}
+                  style={{ opacity: 0.8 }}
+                />
+                <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.optionRight}>
+                <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
+                <Ionicons 
+                  name="arrow-forward-circle" 
+                  size={32} 
+                  color={Colors.light.primary}
+                  style={{ opacity: 0.8 }}
+                />
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -93,33 +100,37 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
 };
 
 const styles = StyleSheet.create({
-  divider: {
-    width: 2,
-    height: '80%',
-    backgroundColor: Colors.light.secondary,
-    opacity: 0.5,
-  },
   card: {
     width: width * 0.85,
-    height: height * 0.3,
+    height: height * 0.22,
     backgroundColor: '#fff',
     overflow: 'hidden',
     borderRadius: width * 0.05,
-    padding: width * 0.05,
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.light.secondary,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
+  },
+  contentContainer: {
+    flex: 1,
+    padding: width * 0.05,
+    justifyContent: 'center',
+  },
+  divider: {
+    width: 2,
+    height: '70%',
+    backgroundColor: Colors.light.secondary,
+    opacity: 0.3,
+    marginHorizontal: width * 0.03,
   },
   optionContainer: {
     flex: 1,
@@ -132,7 +143,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingLeft: width * 0.04,
     gap: 12,
   },
   optionRight: {
@@ -140,12 +150,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingRight: width * 0.04,
     gap: 12,
   },
   optionText: {
-    fontSize: Math.min(width * 0.04, 18),
-    fontWeight: 'bold',
+    fontSize: Math.min(width * 0.045, 20),
+    fontWeight: '600',
     flex: 1,
   },
   leftText: {
