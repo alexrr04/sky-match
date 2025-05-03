@@ -54,8 +54,9 @@ export default function MainScreen() {
             placeholderTextColor={Colors.light.placeholder}
           />
             <PrimaryButton 
-              label="Confirm" 
+              label="Join" 
               onPress={handleConfirmGroupCode} 
+              disabled={!userName || !groupCode}
             />
           </View>
       )}
