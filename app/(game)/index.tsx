@@ -47,10 +47,10 @@ const styles = StyleSheet.create({
   logo: {
     width: 300,
     height: 300,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   text: {
-    fontSize: 32,
+    fontSize: 42,
     fontWeight: 'bold',
     color: Colors.light.primaryText,
     marginBottom: 40,
