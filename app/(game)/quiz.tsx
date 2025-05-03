@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import Animated, { 
   useAnimatedStyle, 
   withRepeat, 
@@ -19,17 +19,7 @@ export default function QuizScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
-  const handleSwipe = (direction: 'left' | 'right') => {
-    console.log(`Question ${currentQuestionIndex + 1}: User chose ${direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight}`);
-
-    if (currentQuestionIndex < quizQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      router.push('/in-game');
-    }
-  };
-
-  // Animation styles
+  // Animation values
   const marker = useSharedValue(0);
   const compass = useSharedValue(0);
   const airplane = useSharedValue(0);
@@ -114,6 +104,17 @@ export default function QuizScreen() {
     })),
   };
 
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const selectedOption = direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight;
+    console.log(`Question ${currentQuestion.id}: User chose ${selectedOption.label}`);
+
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      router.push('/in-game');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.decorativeContainer}>
@@ -183,7 +184,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="earth" 
             size={70} 
-            color={Colors.light.neutralDark}
+            color={Colors.light.accent}
           />
         </Animated.View>
       </View>
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
   },
   decorativeIcon: {
     position: 'absolute',
-    opacity: 0.2,
+    opacity: 0.3,
     zIndex: 0,
   },
   container: {

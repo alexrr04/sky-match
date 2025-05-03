@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Platform, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { QuizOption } from '@/constants/QuizQuestions';
 import {
   GestureHandlerRootView,
   PanGestureHandler,
@@ -18,9 +19,14 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.25;
 
+const images = {
+  '/assets/images/alex.png': require('@/assets/images/alex.png'),
+  '/assets/images/eric.png': require('@/assets/images/eric.png'),
+};
+
 type Props = {
-  optionLeft: string;
-  optionRight: string;
+  optionLeft: QuizOption;
+  optionRight: QuizOption;
   onSwipe: (direction: 'left' | 'right') => void;
 };
 
@@ -73,25 +79,29 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
           <View style={styles.contentContainer}>
             <View style={styles.optionContainer}>
               <View style={styles.optionLeft}>
-                <Image 
-                  source={require('@/assets/images/alex.png')}
-                  style={styles.optionImage}
-                  resizeMode="cover"
-                />
+                {optionLeft.image && (
+                  <Image 
+                    source={images[optionLeft.image]}
+                    style={styles.optionImage}
+                    resizeMode="cover"
+                  />
+                )}
                 <View style={styles.textContainer}>
                   <Ionicons name="arrow-back-circle" size={28} color={Colors.light.accent} />
-                  <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
+                  <Text style={[styles.optionText, styles.leftText]}>{optionLeft.label}</Text>
                 </View>
               </View>
               <View style={styles.divider} />
               <View style={styles.optionRight}>
-                <Image 
-                  source={require('@/assets/images/eric.png')}
-                  style={styles.optionImage}
-                  resizeMode="cover"
-                />
+                {optionRight.image && (
+                  <Image 
+                    source={images[optionRight.image]}
+                    style={styles.optionImage}
+                    resizeMode="cover"
+                  />
+                )}
                 <View style={styles.textContainer}>
-                  <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
+                  <Text style={[styles.optionText, styles.rightText]}>{optionRight.label}</Text>
                   <Ionicons name="arrow-forward-circle" size={28} color={Colors.light.primary} />
                 </View>
               </View>
