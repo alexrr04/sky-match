@@ -175,13 +175,13 @@ const styles = StyleSheet.create({
   logo: {
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
-    marginBottom: height * 0.002,
+    marginBottom: -height * 0.06, // Negative margin to compensate for the PNG's built-in margin
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.05,
+    marginBottom: height * 0.2, // Increased spacing between title and buttons
   },
   buttonContainer: {
     width: '100%',
