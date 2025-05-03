@@ -24,7 +24,6 @@ const InGameScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top progress bar placeholder */}
       <View style={styles.progressBarContainer}>
         {/* Progress bar component */}
         <ProgressBar progress={progress} />
