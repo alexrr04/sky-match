@@ -5,7 +5,7 @@
 
 export const Colors = {
   light: {
-    text: '#333333',                 
+    primaryText: '#333333',                 
     background: '#EEF5FD',                
     primary: '#0770E3',             
     secondary: '#90BFF2',          
