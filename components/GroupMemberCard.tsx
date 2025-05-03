@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Colors } from '@/constants/Colors';
 
 type Props = {
   name: string;
@@ -49,13 +50,15 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333333',
+    color: Colors.light.primaryText,
     flex: 1, 
   },
   personIcon: {
     marginRight: 10,  
+    color: Colors.light.neutralDark,
   },
   crown: {
     marginLeft: 6,
+    color: '#FFD700', 
   },
 });
