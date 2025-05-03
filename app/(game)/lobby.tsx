@@ -4,7 +4,6 @@ import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
 
@@ -37,10 +36,7 @@ export default function LobbyScreen() {
       <View style={styles.groupCodeContainer}>
         <ThemedText style={styles.groupCodeLabel}>Group Code:</ThemedText>
         <ThemedText style={styles.groupCodeValue}>{groupCode}</ThemedText>
-        <Pressable 
-          style={styles.copyButton}
-          onPress={handleCopyCode}
-        >
+        <Pressable style={styles.copyButton} onPress={handleCopyCode}>
           <FontAwesome6 name="copy" size={20} color="#3B82F6" />
         </Pressable>
       </View>
