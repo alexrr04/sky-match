@@ -55,8 +55,8 @@ export default function EndGameScreen() {
 
   const destination = getDestination(demoPreferences);
 
-  const handleReturnToLobby = () => {
-    navigateTo('/lobby');
+  const handleReturnHome= () => {
+    navigateTo('/');
   };
 
   return (
@@ -156,8 +156,8 @@ export default function EndGameScreen() {
           
           <View style={styles.returnButtonContainer}>
             <PrimaryButton
-              onPress={handleReturnToLobby}
-              label="Return to Lobby"
+              onPress={handleReturnHome}
+              label="Return Home"
             />
           </View>
         </View>

@@ -1,9 +1,13 @@
-import { View, StyleSheet, FlatList, Pressable, Clipboard } from 'react-native';
+import { View, StyleSheet, FlatList, Pressable, Clipboard, TouchableOpacity, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+
+const { width, height } = Dimensions.get('window');
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -33,6 +37,12 @@ export default function LobbyScreen() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => navigateTo('/create-group')}
+      >
+        <MaterialIcons name="arrow-back" size={28} color={Colors.light.primary} />
+      </TouchableOpacity>
       {/* Group Code section */}
       <View style={styles.groupCodeContainer}>
         <ThemedText style={styles.groupCodeLabel}>Group Code:</ThemedText>
@@ -68,10 +78,19 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: height * 0.08, // Increase top padding
     paddingHorizontal: 20,
     position: 'relative',
     backgroundColor: Colors.light.background,
+  },
+  backButton: {
+    position: 'absolute',
+    top: height * 0.02,
+    left: width * 0.05,
+    zIndex: 1,
+    padding: 8,
+    backgroundColor: Colors.light.secondary + '20',
+    borderRadius: 8,
   },
   groupCodeContainer: {
     marginBottom: 30,
@@ -79,7 +98,7 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingVertical: 16,
     borderRadius: 16,
-    marginTop: -20,
+    marginTop: height * 0.02, // Add positive margin to separate from back button
     borderWidth: 1,
     borderColor: '#BFDBFE',
     shadowColor: '#60A5FA',

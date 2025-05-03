@@ -90,20 +90,6 @@ export default function CountdownScreen() {
           </Animated.View>
         </View>
       </View>
-
-      {/* Decorative elements */}
-      <MaterialIcons
-        name="flight"
-        size={120}
-        color={Colors.light.secondary + '20'}
-        style={[styles.decorativeIcon, { top: height * 0.1, left: width * 0.1 }]}
-      />
-      <MaterialIcons
-        name="explore"
-        size={100}
-        color={Colors.light.secondary + '20'}
-        style={[styles.decorativeIcon, { bottom: height * 0.15, right: width * 0.1 }]}
-      />
     </View>
   );
 }
@@ -117,12 +103,18 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    marginBottom: 12,
+    marginBottom: 16,
+    lineHeight: 40,
+    includeFontPadding: false,
+    padding: 4,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
@@ -137,8 +129,8 @@ const styles = StyleSheet.create({
     marginTop: -height * 0.05,
   },
   numberContainer: {
-    width: 240,
-    height: 240,
+    width: 200,
+    height: 200,
     borderRadius: 120,
     backgroundColor: Colors.light.secondary + '20',
     justifyContent: 'center',
@@ -154,9 +146,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     height: 160,
-  },
-  decorativeIcon: {
-    position: 'absolute',
-    opacity: 0.5,
-  },
+  }
 });
