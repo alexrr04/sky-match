@@ -1,38 +1,45 @@
 import { Stack } from 'expo-router';
-import { View, BackHandler } from 'react-native';
-import 'react-native-reanimated';
-import { useEffect } from 'react';
-
+import { View } from 'react-native';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
+import { Colors } from '@/constants/Colors';
 
 export default function RootLayout() {
-  const { appIsReady, onLayoutRootView } = useAppInitialization();
+  const isReady = useAppInitialization();
 
-  useEffect(() => {
-    const backAction = () => {
-      // Custom back action logic
-      return true; // Return true to prevent default back behavior
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
+  if (!isReady) {
+    return (
+      <View style={{ flex: 1, backgroundColor: Colors.light.background }} />
     );
-
-    return () => backHandler.remove();
-  }, []);
-
-  if (!appIsReady) return null;
+  }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="(game)" 
-          options={{ headerShown: false }}
-        />
-      </Stack>
-    </View>
+    <Stack 
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: Colors.light.background }
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen 
+        name="(game)/quiz" 
+        options={{
+          animation: 'fade',
+        }}
+      />
+      <Stack.Screen 
+        name="(game)/in-game" 
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: false
+        }}
+      />
+      <Stack.Screen 
+        name="(game)/end-game" 
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: false
+        }}
+      />
+    </Stack>
   );
 }

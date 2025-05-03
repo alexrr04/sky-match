@@ -1,9 +1,8 @@
-import { ImageAssets } from './ImageAssets';
+import { Images } from './ImageAssets';
 
 export type QuizOption = {
   label: string;
-  image:
-    | typeof ImageAssets[keyof typeof ImageAssets]; // ← ahora es una imagen require()
+  image: keyof typeof Images;
 };
 
 export type QuizQuestion = {
@@ -16,62 +15,74 @@ export type QuizQuestion = {
 export const quizQuestions: QuizQuestion[] = [
   {
     id: '1',
-    question: 'What do you prefer?',
+    question: 'What kind of weather do you prefer?',
     optionLeft: {
-      label: 'Nature',
-      image: ImageAssets.beach,
+      label: 'Hot',
+      image: 'hot'
     },
     optionRight: {
-      label: 'City',
-      image: ImageAssets.mountain,
-    },
+      label: 'Cold',
+      image: 'cold'
+    }
   },
   {
     id: '2',
-    question: 'Do you like...',
+    question: 'Choose your ideal vacation setting',
     optionLeft: {
-      label: 'Cold',
-      image: ImageAssets.cold,
-    },
-    optionRight: {
-      label: 'Hot',
-      image: ImageAssets.hot,
-    },
-  },
-  {
-    id: '3',
-    question: 'Do you prefer...',
-    optionLeft: {
-      label: 'Mountains',
-      image: ImageAssets.mountain,
+      label: 'Mountain',
+      image: 'mountain'
     },
     optionRight: {
       label: 'Beach',
-      image: ImageAssets.beach,
+      image: 'beach'
+    }
+  },
+  {
+    id: '3',
+    question: 'What is your preferred activity style?',
+    optionLeft: {
+      label: 'Adventure',
+      image: 'adventure'
     },
+    optionRight: {
+      label: 'Relaxation',
+      image: 'relax'
+    }
   },
   {
     id: '4',
-    question: 'Do you like...',
+    question: "Do you prefer...",
     optionLeft: {
-      label: 'Adventure',
-      image: ImageAssets.adventure,
+      label: 'Modern City',
+      image: 'modernCity'
     },
     optionRight: {
-      label: 'Relax',
-      image: ImageAssets.relax,
-    },
+      label: 'Historic',
+      image: 'historic'
+    }   
   },
   {
     id: '5',
-    question: 'Do you prefer...',
+    question: "The food is important to you?",
     optionLeft: {
-      label: 'Historic',
-      image: ImageAssets.historic,
+      label: 'No',
+      image: 'fastFood'
     },
     optionRight: {
-      label: 'Modern',
-      image: ImageAssets.modernCity,
-    },
+      label: 'Yes',
+      image: 'goodFood'
+    }
   },
+  {
+    id: '6',
+    question: "Do you prefer...",
+    optionLeft: {
+      label: 'Party',
+      image: 'party'
+    },
+    optionRight: {
+      label: 'Sleep',
+      image: 'sleep'
+  }
+}
 ];

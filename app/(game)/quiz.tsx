@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
@@ -11,25 +11,23 @@ import Animated, {
   withRepeat, 
   withSequence, 
   withTiming,
-  useSharedValue,
-  Easing
+  useSharedValue
 } from 'react-native-reanimated';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 
 export default function QuizScreen() {
-  useImagePreloader();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = quizQuestions[currentQuestionIndex];
+  const imagesLoaded = useImagePreloader(currentQuestionIndex, quizQuestions.length);
 
   // Animation values
   const marker = useSharedValue(0);
   const compass = useSharedValue(0);
   const airplane = useSharedValue(0);
   const map = useSharedValue(0);
-  const camera = useSharedValue(0);
   const earth = useSharedValue(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     marker.value = withRepeat(
       withSequence(
         withTiming(-25, { duration: 2000 }),
@@ -66,15 +64,6 @@ export default function QuizScreen() {
       true
     );
 
-    camera.value = withRepeat(
-      withSequence(
-        withTiming(15, { duration: 2300 }),
-        withTiming(-15, { duration: 2300 })
-      ),
-      -1,
-      true
-    );
-
     earth.value = withRepeat(
       withSequence(
         withTiming(-10, { duration: 2700 }),
@@ -98,9 +87,6 @@ export default function QuizScreen() {
     map: useAnimatedStyle(() => ({
       transform: [{ rotate: `${map.value}deg` }]
     })),
-    camera: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${camera.value}deg` }]
-    })),
     earth: useAnimatedStyle(() => ({
       transform: [{ rotate: `${earth.value}deg` }]
     })),
@@ -116,6 +102,15 @@ export default function QuizScreen() {
       router.push('/in-game');
     }
   };
+
+  if (!imagesLoaded) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <ThemedText style={styles.loadingText}>Loading next question...</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -231,6 +226,15 @@ export default function QuizScreen() {
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: Colors.light.primary,
+  },
   decorativeContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: -1,

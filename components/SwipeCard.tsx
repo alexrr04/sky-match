@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions, Platform, Image } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { QuizOption } from '@/constants/QuizQuestions';
+import { Images } from '@/constants/ImageAssets';
 import {
   GestureHandlerRootView,
   PanGestureHandler,
@@ -74,13 +75,11 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
           <View style={styles.contentContainer}>
             <View style={styles.optionContainer}>
               <View style={styles.optionLeft}>
-                {optionLeft.image && (
-                  <Image 
-                    source={optionLeft.image}
-                    style={styles.optionImage}
-                    resizeMode="cover"
-                  />
-                )}
+                <Image 
+                  source={Images[optionLeft.image]}
+                  style={styles.optionImage}
+                  resizeMode="cover"
+                />
                 <View style={styles.textContainer}>
                   <Ionicons name="arrow-back-circle" size={28} color={Colors.light.accent} />
                   <Text style={[styles.optionText, styles.leftText]}>{optionLeft.label}</Text>
@@ -88,13 +87,11 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
               </View>
               <View style={styles.divider} />
               <View style={styles.optionRight}>
-                {optionRight.image && (
-                  <Image 
-                    source={optionRight.image}
-                    style={styles.optionImage}
-                    resizeMode="cover"
-                  />
-                )}
+                <Image 
+                  source={Images[optionRight.image]}
+                  style={styles.optionImage}
+                  resizeMode="cover"
+                />
                 <View style={styles.textContainer}>
                   <Text style={[styles.optionText, styles.rightText]}>{optionRight.label}</Text>
                   <Ionicons name="arrow-forward-circle" size={28} color={Colors.light.primary} />
