@@ -1,78 +1,7 @@
 const { findDestinationsWithinBudget } = require('./FlightSearcher');
 const airportsWithAttributes = require('../constants/airports_with_attributes.json');
 
-interface Member {
-  name: string;
-  originAirport: string;
-  budget: number;
-  Relax: boolean;
-  Adventure: boolean;
-  Cold: boolean;
-  Hot: boolean;
-  Beach: boolean;
-  Mountain: boolean;
-  "Modern City": boolean;
-  Historic: boolean;
-  Nightlife: boolean;
-  "Quiet evenings": boolean;
-  "Good food": boolean;
-  [key: string]: string | number | boolean;
-}
-
-interface GroupInput {
-  code: string;
-  departureDate: string;
-  returnDate: string;
-  members: Member[];
-}
-
-interface GroupDestination {
-  destination: string;
-  totalGroupCost: number;
-  matchScore: number;
-  costScore: number;
-  finalScore: number;
-  memberFlights: {
-    [memberName: string]: {
-      origin: string;
-      outboundFlight: {
-        airline: string;
-        price: number;
-        isDirect: boolean;
-      };
-      returnFlight: {
-        airline: string;
-        price: number;
-        isDirect: boolean;
-      };
-    };
-  };
-  matchDetails: {
-    [attribute: string]: {
-      score: number;
-      matches: string[];
-      mismatches: string[];
-    };
-  };
-}
-
-interface AirportInfo {
-  iata: string;
-  name: string;
-  country: string;
-  Relax: boolean;
-  Adventure: boolean;
-  Cold: boolean;
-  Hot: boolean;
-  Beach: boolean;
-  Mountain: boolean;
-  "Modern City": boolean;
-  Historic: boolean;
-  Nightlife: boolean;
-  "Quiet evenings": boolean;
-  "Good food": boolean;
-  [key: string]: string | boolean;
-}
+import { Member, GroupInput, GroupDestination, AirportInfo } from './types';
 
 function calculateDestinationScore(destination: AirportInfo, members: Member[]): { 
   score: number; 
@@ -296,4 +225,5 @@ if (require.main === module) {
   main().catch(console.error);
 }
 
-module.exports = { findBestMatchingDestinations, displayMatchingDestinations };
+export { findBestMatchingDestinations, displayMatchingDestinations };
+export type { GroupDestination };

@@ -95,7 +95,7 @@ export default function QuizScreen() {
 
   const { addQuizAnswer, transformAndStorePreferences } = useTripStore();
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = async (direction: 'left' | 'right') => {
     const selectedOption = direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight;
     
     addQuizAnswer({
@@ -106,8 +106,8 @@ export default function QuizScreen() {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      transformAndStorePreferences();
-      router.push('/countdown');
+      await transformAndStorePreferences();
+      router.push('/end-game');
     }
   };
 

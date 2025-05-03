@@ -1,5 +1,6 @@
 
 export interface MemberPreferences {
+  [key: string]: string | number | boolean;
   name: string;
   originAirport: string;
   budget: number;
@@ -27,16 +28,20 @@ export interface QuizAnswer {
   choice: 'left' | 'right';
 }
 
+import { GroupDestination } from '@/scripts/DestinationMatcher';
+
 export interface TripState {
   phase: number;
   progress: number;
   phase1Data: Phase1Data | null;
   quizAnswers: QuizAnswer[];
   memberPreferences: MemberPreferences | null;
+  selectedDestination: GroupDestination | null;
   setPhase: (phase: number) => void;
   setProgress: (progress: number) => void;
   setPhase1Data: (data: Phase1Data) => void;
   addQuizAnswer: (answer: QuizAnswer) => void;
-  transformAndStorePreferences: () => void;
+  transformAndStorePreferences: () => Promise<void>;
   getMemberPreferences: () => MemberPreferences | null;
+  getSelectedDestination: () => GroupDestination | null;
 }

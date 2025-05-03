@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Phase1Data, QuizAnswer, MemberPreferences, TripState } from './types';
 import { useLobbyStore } from '../lobbyState/lobbyStore';
+import { findBestMatchingDestinations } from '@/scripts/DestinationMatcher';
 
 export const useTripStore = create<TripState>((set, get) => ({
   phase: 0,
@@ -19,7 +20,9 @@ export const useTripStore = create<TripState>((set, get) => ({
     set({ quizAnswers: [...currentAnswers, answer] });
   },
 
-  transformAndStorePreferences: () => {
+  selectedDestination: null,
+
+  transformAndStorePreferences: async () => {
     const { phase1Data, quizAnswers } = get();
     if (!phase1Data || quizAnswers.length < 6) return;
 
@@ -42,7 +45,27 @@ export const useTripStore = create<TripState>((set, get) => ({
 
     console.log('Member Preferences:', preferences);
     set({ memberPreferences: preferences });
+
+    // Find matching destinations
+    console.log('Finding matching destinations...');
+    const group = {
+      code: useLobbyStore.getState().getLobbyId(),
+      departureDate: "2025-07-15", // Hardcoded for now
+      returnDate: "2025-07-22",    // Hardcoded for now
+      members: [preferences]
+    };
+
+    console.log('Group data:', group);
+    const destinations = await findBestMatchingDestinations(group);
+    console.log('Matching destinations found:', destinations);
+
+    if (destinations.length > 0) {
+      const winner = destinations[0];
+      console.log('Winner destination:', winner);
+      set({ selectedDestination: winner });
+    }
   },
 
-  getMemberPreferences: () => get().memberPreferences
+  getMemberPreferences: () => get().memberPreferences,
+  getSelectedDestination: () => get().selectedDestination
 }));
