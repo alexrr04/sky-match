@@ -1,11 +1,17 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "WebSocket server for SkyMatch trip planner",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "uuid": "^9.0.1",
+    "ws": "^8.16.0"
+  }
 }
