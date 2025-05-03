@@ -11,6 +11,7 @@ import Animated, {
   withRepeat, 
   withSequence, 
   withTiming,
+  useSharedValue,
   Easing
 } from 'react-native-reanimated';
 
@@ -29,34 +30,87 @@ export default function QuizScreen() {
   };
 
   // Animation styles
-  const baseAnimation = (startDeg: string, endDeg: string, duration: number) =>
-    withRepeat(
+  const marker = useSharedValue(0);
+  const compass = useSharedValue(0);
+  const airplane = useSharedValue(0);
+  const map = useSharedValue(0);
+  const camera = useSharedValue(0);
+  const earth = useSharedValue(0);
+
+  useEffect(() => {
+    marker.value = withRepeat(
       withSequence(
-        withTiming(startDeg, { 
-          duration,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-        }),
-        withTiming(endDeg, { 
-          duration,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
-        })
+        withTiming(-25, { duration: 2000 }),
+        withTiming(-5, { duration: 2000 })
+      ),
+      -1,
+      true
+    );
+    
+    compass.value = withRepeat(
+      withSequence(
+        withTiming(25, { duration: 2500 }),
+        withTiming(5, { duration: 2500 })
       ),
       -1,
       true
     );
 
+    airplane.value = withRepeat(
+      withSequence(
+        withTiming(55, { duration: 3000 }),
+        withTiming(35, { duration: 3000 })
+      ),
+      -1,
+      true
+    );
+
+    map.value = withRepeat(
+      withSequence(
+        withTiming(-20, { duration: 2800 }),
+        withTiming(0, { duration: 2800 })
+      ),
+      -1,
+      true
+    );
+
+    camera.value = withRepeat(
+      withSequence(
+        withTiming(15, { duration: 2300 }),
+        withTiming(-15, { duration: 2300 })
+      ),
+      -1,
+      true
+    );
+
+    earth.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 2700 }),
+        withTiming(10, { duration: 2700 })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
   const iconAnimations = {
     marker: useAnimatedStyle(() => ({
-      transform: [{ rotate: baseAnimation('-25deg', '-5deg', 2000) }]
+      transform: [{ rotate: `${marker.value}deg` }]
     })),
     compass: useAnimatedStyle(() => ({
-      transform: [{ rotate: baseAnimation('25deg', '5deg', 2500) }]
+      transform: [{ rotate: `${compass.value}deg` }]
     })),
     airplane: useAnimatedStyle(() => ({
-      transform: [{ rotate: baseAnimation('55deg', '35deg', 3000) }]
+      transform: [{ rotate: `${airplane.value}deg` }]
     })),
     map: useAnimatedStyle(() => ({
-      transform: [{ rotate: baseAnimation('-20deg', '0deg', 2800) }]
+      transform: [{ rotate: `${map.value}deg` }]
+    })),
+    camera: useAnimatedStyle(() => ({
+      transform: [{ rotate: `${camera.value}deg` }]
+    })),
+    earth: useAnimatedStyle(() => ({
+      transform: [{ rotate: `${earth.value}deg` }]
     })),
   };
 
@@ -73,7 +127,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="location" 
             size={90} 
-            color={Colors.light.primary}
+            color='#D94895'
           />
         </Animated.View>
 
@@ -87,7 +141,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="compass" 
             size={80} 
-            color={Colors.light.accent}
+            color='#F0782F'
           />
         </Animated.View>
 
@@ -115,7 +169,21 @@ export default function QuizScreen() {
           <Ionicons 
             name="map" 
             size={75} 
-            color={Colors.light.accent}
+            color='#CED948'
+          />
+        </Animated.View>
+
+        <Animated.View 
+          style={[
+            styles.decorativeIcon,
+            { bottom: height * 0.3, left: width * 0.3 },
+            iconAnimations.earth
+          ]}
+        >
+          <Ionicons 
+            name="earth" 
+            size={70} 
+            color='#5AD948'
           />
         </Animated.View>
       </View>
@@ -166,7 +234,7 @@ const styles = StyleSheet.create({
   },
   decorativeIcon: {
     position: 'absolute',
-    opacity: 0.10,
+    opacity: 0.2,
     zIndex: 0,
   },
   container: {
