@@ -9,7 +9,7 @@ export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
 
   const handleStartMatch = () => {
-    navigateTo('/in-game');
+    navigateTo('/phase1-quiz');
   };
 
   const groupCode = 'ABC123';

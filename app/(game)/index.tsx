@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, TextInput } from 'react-native';
+import { View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
@@ -23,6 +23,7 @@ export default function MainScreen() {
 
   const [showPopup, setShowPopup] = React.useState(false);
   const [groupCode, setGroupCode] = React.useState('');
+  const [userName, setUserName] = React.useState('');
 
   return (
     <View style={styles.container}>
@@ -30,30 +31,45 @@ export default function MainScreen() {
         source={require('@/assets/images/logo-no-bg.png')}
         style={styles.logo}
       />
-      <Text style={styles.text}>FriendTrip</Text>
+      <Text style={styles.text}>SkyMatch</Text>
       {showPopup && (
-        <View style={styles.popup}>
-          <Text style={styles.popupText}>Enter Group Code:</Text>
-          <TextInput
-            style={styles.input}
-            value={groupCode}
-            onChangeText={setGroupCode}
-            placeholder="Group Code"
+          <View style={styles.popup}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setShowPopup(false)}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+            <Text style={styles.popupText}>Enter your name:</Text>
+            <TextInput
+              style={styles.input}
+              value={userName}
+              onChangeText={setUserName}
+              placeholder="Name"
+            placeholderTextColor={Colors.light.placeholder}
           />
-          <PrimaryButton 
-            label="Confirm" 
-            onPress={handleConfirmGroupCode} 
+            <Text style={styles.popupText}>Enter Group Code:</Text>
+            <TextInput
+              style={styles.input}
+              value={groupCode}
+              onChangeText={setGroupCode}
+              placeholder="Group Code"
+            placeholderTextColor={Colors.light.placeholder}
           />
-        </View>
+            <PrimaryButton 
+              label="Join" 
+              onPress={handleConfirmGroupCode} 
+              disabled={!userName || !groupCode}
+            />
+          </View>
       )}
       <View style={[styles.buttonContainer, showPopup && styles.dimmed]}>
         <PrimaryButton 
           label="Create Group" 
           onPress={handleCreateGroup} 
+          disabled={showPopup}
         />
         <PrimaryButton 
           label="Join Group" 
           onPress={handleJoinGroup} 
+          disabled={showPopup}
         />
       </View>
     </View>
@@ -69,7 +85,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   dimmed: {
-    opacity: 0.5,
+    opacity: 0.05,
   },
   logo: {
     width: 300,
@@ -97,6 +113,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     elevation: 5,
+    zIndex: 2,
   },
   popupText: {
     fontSize: 18,
@@ -118,5 +135,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.primary,
     color: '#FFFFFF',
     borderRadius: 8,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.light.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

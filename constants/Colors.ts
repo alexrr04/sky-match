@@ -16,6 +16,9 @@ export const Colors = {
     accent: '#FF0048',         
     neutralDark: '#04458B',
     buttonText: '#FEFEFF' , 
+    placeholder: '#B0BEC5',
+    disabled: '#B0BEC5',
+    disabledText: '#CFD8DC',
     
 
     tint: tintColorLight,
