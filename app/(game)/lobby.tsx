@@ -16,8 +16,13 @@ export default function LobbyScreen() {
     { id: '1', name: 'Sofia', isHost: true },
     { id: '2', name: 'Carlos' },
     { id: '3', name: 'Lucía' },
-    
-
+    { id: '4', name: 'Mateo' },
+    { id: '5', name: 'Valentina' },
+    { id: '6', name: 'Diego' },
+    { id: '7', name: 'Camila' },
+    { id: '8', name: 'Andrés' },
+    { id: '9', name: 'Isabella' },
+    { id: '10', name: 'Sebastián' },
   ];
 
   return (
@@ -54,45 +59,73 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 80, // Increased top padding for safe area
     paddingHorizontal: 20,
+    position: 'relative',
+    backgroundColor: '#F5F5F5',
   },
   groupCodeContainer: {
     marginBottom: 30,
+    backgroundColor: '##',
+    padding: 20,
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginTop: -20, // Pull up slightly to balance the increased top padding
   },
   groupCodeLabel: {
     fontSize: 14,
-    color: '#000',
-    textAlign: 'left',
-    marginBottom: 4,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   groupCodeValue: {
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#000',
+    letterSpacing: 1.5,
+    paddingVertical: 8,
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   memberList: {
-    paddingBottom: 20,
+    paddingBottom: 100, // Space for the fixed button
   },
   footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFF',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20, // Subirlo desde el borde inferior
   },
   actionButton: {
-    fontSize: 18,
-    padding: 12,
+    fontSize: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
     backgroundColor: '#007AFF',
     color: '#FFFFFF',
-    borderRadius: 8,
-    minWidth: 150,
+    borderRadius: 12,
+    width: '100%',
     textAlign: 'center',
+    fontWeight: 'bold',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
