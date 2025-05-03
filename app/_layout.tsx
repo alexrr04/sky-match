@@ -27,11 +27,10 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
-        <Stack.Screen
-          name="index" // Main screen (game)/index.tsx
-          options={{
-            headerShown: false,
-          }}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="(game)" 
+          options={{ headerShown: false }}
         />
       </Stack>
     </View>
