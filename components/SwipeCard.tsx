@@ -15,10 +15,21 @@ import Animated, {
   useSharedValue,
   withSpring,
   runOnJS,
+  interpolate,
+  Extrapolate,
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
-const SWIPE_THRESHOLD = width * 0.25;
+const SWIPE_THRESHOLD = width * 0.3;
+
+const springConfig = {
+  damping: 12,
+  mass: 0.3,
+  stiffness: 100,
+  overshootClamping: false,
+  restSpeedThreshold: 0.3,
+  restDisplacementThreshold: 0.3,
+};
 
 type Props = {
   optionLeft: QuizOption;
@@ -28,6 +39,7 @@ type Props = {
 
 export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe }) => {
   const translateX = useSharedValue(0);
+  const isSwipingRight = useSharedValue(false);
 
   useEffect(() => {
     translateX.value = 0;
@@ -37,31 +49,54 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
     PanGestureHandlerGestureEvent,
     { startX: number }
   >({
-    onStart: () => {
-      translateX.value = 0;
+    onStart: (_, context) => {
+      context.startX = translateX.value;
     },
-    onActive: (event) => {
-      translateX.value = event.translationX;
+    onActive: (event, context) => {
+      translateX.value = context.startX + event.translationX;
+      isSwipingRight.value = event.translationX > 0;
     },
-    onEnd: () => {
-      const swipeDistance = translateX.value;
-      if (swipeDistance > SWIPE_THRESHOLD) {
-        runOnJS(onSwipe)('right');
-      } else if (swipeDistance < -SWIPE_THRESHOLD) {
-        runOnJS(onSwipe)('left');
+    onEnd: (event) => {
+      const swipeDistance = event.translationX;
+      const velocity = event.velocityX;
+
+      if (Math.abs(swipeDistance) > SWIPE_THRESHOLD || Math.abs(velocity) > 800) {
+        // If swipe is fast enough or passes threshold, complete the swipe
+        const direction = swipeDistance > 0 ? 'right' : 'left';
+        translateX.value = withSpring(
+          direction === 'right' ? width : -width,
+          {
+            velocity,
+            ...springConfig,
+          },
+          () => runOnJS(onSwipe)(direction)
+        );
+      } else {
+        // Return to center with spring animation
+        translateX.value = withSpring(0, springConfig);
       }
-      translateX.value = withSpring(0);
     }
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const rotation = translateX.value / 25;
-    const scale = Math.abs(translateX.value) > SWIPE_THRESHOLD ? 0.95 : 1;
-    
+    const rotate = interpolate(
+      translateX.value,
+      [-width, 0, width],
+      [-30, 0, 30],
+      Extrapolate.CLAMP
+    );
+
+    const scale = interpolate(
+      Math.abs(translateX.value),
+      [0, SWIPE_THRESHOLD],
+      [1, 0.9],
+      Extrapolate.CLAMP
+    );
+
     return {
       transform: [
         { translateX: translateX.value },
-        { rotate: `${rotation}deg` },
+        { rotate: `${rotate}deg` },
         { scale },
       ],
       backgroundColor: '#fff',
