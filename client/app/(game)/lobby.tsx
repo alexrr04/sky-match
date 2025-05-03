@@ -1,45 +1,101 @@
-import { View, StyleSheet, FlatList, Pressable, Clipboard, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Pressable,
+  Clipboard,
+  TouchableOpacity,
+  Dimensions,
+  Platform,
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { socket } from '@/utils/socket';
+
+// Define a TypeScript interface for a participant
+interface Participant {
+  id: string;
+  name: string;
+  isHost?: boolean;
+}
+
+interface LobbyData {
+  lobbyCode: string;
+  members: Participant[];
+}
 
 const { width, height } = Dimensions.get('window');
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
+  const [lobbyData, setLobbyData] = useState<LobbyData | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isHost, setIsHost] = useState(false);
+  const [lobbyCode, setLobbyCode] = useState('');
+
+  useEffect(() => {
+    // Listen for lobby data updates
+    const handleLobbyData = (data: LobbyData) => {
+      console.log('Received lobby data:', data);
+      setLobbyData(data);
+      setLobbyCode(data.lobbyCode);
+      setParticipants(data.members);
+      setIsHost(data.members.some((member) => member.isHost));
+    };
+
+    socket.on('lobbyData', handleLobbyData);
+
+    // Request the lobby data using our socket connection
+    // The server knows our socket.id and associated lobby
+    console.log('Requesting lobby state with socket:', socket.id);
+    socket.emit('getLobbyState', (response: any) => {
+      console.log('Got lobby state response:', response);
+      if (response.success === false) {
+        console.error('Failed to get lobby state:', response.message);
+      } else {
+        setLobbyData(response);
+      }
+    });
+
+    return () => {
+      socket.off('lobbyData', handleLobbyData);
+    };
+  }, []);
+
+  const handleCopyCode = () => {
+    if (lobbyData?.lobbyCode) {
+      Clipboard.setString(lobbyData.lobbyCode);
+    }
+  };
 
   const handleStartMatch = () => {
     navigateTo('/phase1-quiz');
   };
 
-  const groupCode = 'ABC123';
-
-  const handleCopyCode = () => {
-    Clipboard.setString(groupCode);
-  };
-
-  const participants = [
-    { id: '1', name: 'Sofia', isHost: true },
-    { id: '2', name: 'Carlos' },
-    { id: '3', name: 'Lucía' },
-    { id: '4', name: 'Mateo' },
-    { id: '5', name: 'Valentina' },
-    { id: '6', name: 'Diego' },
-    { id: '7', name: 'Camila' },
-    { id: '8', name: 'Andrés' },
-  ];
+  // Show loading state while we wait for lobby data
+  if (!lobbyData) {
+    return (
+      <View style={styles.container}>
+        <ThemedText style={styles.loadingText}>Loading lobby...</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigateTo('/create-group')}
       >
-        <MaterialIcons name="arrow-back" size={28} color={Colors.light.primary} />
+        <MaterialIcons
+          name="arrow-back"
+          size={28}
+          color={Colors.light.primary}
+        />
       </TouchableOpacity>
       {/* Group Code section */}
       <View style={styles.headerSection}>
@@ -47,32 +103,39 @@ export default function LobbyScreen() {
           <View style={styles.codeSection}>
             <View>
               <ThemedText style={styles.groupCodeLabel}>Group Code</ThemedText>
-              <ThemedText style={styles.groupCodeValue}>{groupCode}</ThemedText>
+              <ThemedText style={styles.groupCodeValue}>
+                {lobbyData?.lobbyCode}
+              </ThemedText>
             </View>
-            <Pressable 
-              style={styles.copyButton} 
-              onPress={handleCopyCode}
-            >
-              <FontAwesome6 name="copy" size={18} color={Colors.light.primary} />
+            <Pressable style={styles.copyButton} onPress={handleCopyCode}>
+              <FontAwesome6
+                name="copy"
+                size={18}
+                color={Colors.light.primary}
+              />
             </Pressable>
           </View>
           <View style={styles.divider} />
           <View style={styles.infoSection}>
             <View style={styles.infoItem}>
-              <FontAwesome6 name="users" size={14} color={Colors.light.primary} />
+              <FontAwesome6
+                name="users"
+                size={14}
+                color={Colors.light.primary}
+              />
               <ThemedText style={styles.infoText}>
-                {participants.length} Member{participants.length !== 1 ? 's' : ''}
+                {participants.length} Member
+                {participants.length !== 1 ? 's' : ''}
               </ThemedText>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Members */}
+      {/* Members List */}
       <ThemedText style={styles.title}>Members</ThemedText>
-
       <FlatList
-        data={participants}
+        data={lobbyData.members}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <GroupMemberCard name={item.name} isHost={item.isHost} />
@@ -81,7 +144,7 @@ export default function LobbyScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Start Button */}
+      {/* Footer with Start Button */}
       <View style={styles.footer}>
         <ThemedText style={styles.actionButton} onPress={handleStartMatch}>
           Start Match
@@ -96,8 +159,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: height * 0.1, // Increased padding for more space
     paddingHorizontal: 20,
-    position: 'relative',
     backgroundColor: Colors.light.background,
+    position: 'relative',
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: Colors.light.primaryText,
   },
   backButton: {
     position: 'absolute',
@@ -128,24 +197,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  codeSection: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  groupCodeLabel: {
-    fontSize: 14,
-    color: Colors.light.primary,
-    marginBottom: 4,
-    fontWeight: '600',
-  },
-  groupCodeValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: Colors.light.primaryText,
-    letterSpacing: 1,
-  },
   copyButton: {
     padding: 10,
     backgroundColor: Colors.light.secondary + '20',
@@ -171,6 +222,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  codeSection: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  groupCodeLabel: {
+    fontSize: 14,
+    color: Colors.light.primary,
+    marginBottom: 4,
+    fontWeight: '600',
+  },
+  groupCodeValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#1E40AF', // Dark blue
+    letterSpacing: 1.5,
+    paddingVertical: 8,
+  },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -178,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   memberList: {
-    paddingBottom: 100, // Space for the fixed button
+    paddingBottom: 100,
   },
   footer: {
     position: 'absolute',
@@ -189,7 +260,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0', // Light grey-blue border
+    borderTopColor: '#E2E8F0',
     alignItems: 'center',
   },
   actionButton: {
@@ -203,10 +274,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     shadowColor: '#1E40AF',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
