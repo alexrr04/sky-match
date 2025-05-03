@@ -1,9 +1,7 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
 import { GroupMemberCard } from '@/components/GroupMemberCard';
-
-
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -12,27 +10,39 @@ export default function LobbyScreen() {
     navigateTo('/in-game');
   };
 
-  // 🔽 Participantes de prueba
+  const groupCode = 'ABC123';
+
   const participants = [
     { id: '1', name: 'Sofia', isHost: true },
     { id: '2', name: 'Carlos' },
     { id: '3', name: 'Lucía' },
+    
+
   ];
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.title}>Game Lobby</ThemedText>
-
-      <View style={styles.memberList}>
-        {participants.map((p) => (
-          <GroupMemberCard key={p.id} name={p.name} isHost={p.isHost} />
-        ))}
+      {/* Group Code section */}
+      <View style={styles.groupCodeContainer}>
+        <ThemedText style={styles.groupCodeLabel}>Group Code:</ThemedText>
+        <ThemedText style={styles.groupCodeValue}>{groupCode}</ThemedText>
       </View>
 
-      <View style={styles.content}>
-        <ThemedText style={styles.subtitle}>
-          Players in Lobby: {participants.length}
-        </ThemedText>
+      {/* Members */}
+      <ThemedText style={styles.title}>Members</ThemedText>
+
+      <FlatList
+        data={participants}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <GroupMemberCard name={item.name} isHost={item.isHost} />
+        )}
+        contentContainerStyle={styles.memberList}
+        showsVerticalScrollIndicator={false}
+      />
+
+      {/* Start Button */}
+      <View style={styles.footer}>
         <ThemedText style={styles.actionButton} onPress={handleStartMatch}>
           Start Match
         </ThemedText>
@@ -44,25 +54,37 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 40,
+    paddingHorizontal: 20,
+  },
+  groupCodeContainer: {
+    marginBottom: 30,
+  },
+  groupCodeLabel: {
+    fontSize: 14,
+    color: '#000',
+    textAlign: 'left',
+    marginBottom: 4,
+  },
+  groupCodeValue: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#000',
   },
   title: {
-    fontSize: 28,
-    textAlign: 'center',
-    marginBottom: 20,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 10,
   },
   memberList: {
-    width: '100%',
-    marginBottom: 20,
+    paddingBottom: 20,
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  footer: {
     alignItems: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 20, // Subirlo desde el borde inferior
   },
   actionButton: {
     fontSize: 18,
