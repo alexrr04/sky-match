@@ -1,6 +1,9 @@
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
+import { GroupMemberCard } from '@/components/GroupMemberCard';
+
+
 
 export default function LobbyScreen() {
   const { navigateTo } = useNavigate();
@@ -9,11 +12,27 @@ export default function LobbyScreen() {
     navigateTo('/in-game');
   };
 
+  // 🔽 Participantes de prueba
+  const participants = [
+    { id: '1', name: 'Sofia', isHost: true },
+    { id: '2', name: 'Carlos' },
+    { id: '3', name: 'Lucía' },
+  ];
+
   return (
     <View style={styles.container}>
       <ThemedText style={styles.title}>Game Lobby</ThemedText>
+
+      <View style={styles.memberList}>
+        {participants.map((p) => (
+          <GroupMemberCard key={p.id} name={p.name} isHost={p.isHost} />
+        ))}
+      </View>
+
       <View style={styles.content}>
-        <ThemedText style={styles.subtitle}>Players in Lobby: 1</ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Players in Lobby: {participants.length}
+        </ThemedText>
         <ThemedText style={styles.actionButton} onPress={handleStartMatch}>
           Start Match
         </ThemedText>
@@ -30,7 +49,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
+  },
+  memberList: {
+    width: '100%',
+    marginBottom: 20,
   },
   content: {
     flex: 1,

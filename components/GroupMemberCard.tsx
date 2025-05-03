@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
-
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type Props = {
   name: string;
@@ -13,8 +13,19 @@ const screenWidth = Dimensions.get('window').width;
 export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
   return (
     <View style={styles.card}>
-      {/* Nombre del usuario */}
+     
+      <Ionicons name="person" size={22} color="black" style={styles.personIcon} />
+
       <Text style={styles.name}>{name}</Text>
+
+      {isHost && (
+        <MaterialCommunityIcons 
+          name="crown" 
+          size={24} 
+          color="black" 
+          style={styles.crown} 
+        />
+      )}
     </View>
   );
 };
@@ -23,7 +34,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', 
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
@@ -39,11 +50,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333333',
+    flex: 1, 
   },
-  rightIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  personIcon: {
+    marginRight: 10,  
   },
   crown: {
     marginLeft: 6,
