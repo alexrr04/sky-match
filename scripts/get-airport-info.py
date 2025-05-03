@@ -86,4 +86,4 @@ def process_airports(csv_file, output_file):
         json.dump(airports, f, indent=2, ensure_ascii=False)
 
 # Run it
-process_airports("../constants/airports.csv", "airports_with_attributes_full.json")
+process_airports("../constants/top_300_airports.csv", "airports_with_attributes_full.json")

@@ -1,5 +1,5 @@
 const { findDestinationsWithinBudget } = require('./FlightSearcher');
-const airportsWithAttributes = require('../constants/airports_with_attributes.json');
+const airportsWithAttributes = require('../constants/airports_with_attributes_full.json');
 
 interface Member {
   name: string;
