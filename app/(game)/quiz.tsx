@@ -14,8 +14,10 @@ import Animated, {
   useSharedValue,
   Easing
 } from 'react-native-reanimated';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
 
 export default function QuizScreen() {
+  useImagePreloader();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = quizQuestions[currentQuestionIndex];
 

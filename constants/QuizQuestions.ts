@@ -1,6 +1,9 @@
+import { ImageAssets } from './ImageAssets';
+
 export type QuizOption = {
   label: string;
-  image: '/assets/images/alex.png' | '/assets/images/eric.png' | '/assets/images/beach.png' | '/assets/images/mountain.png' | '/assets/images/cold.png' | '/assets/images/hot.png' | '/assets/images/historic.png' | '/assets/images/modernCity.png' | '/assets/images/relax.png' | '/assets/images/adventure.png' | '/assets/images/party.png';
+  image:
+    | typeof ImageAssets[keyof typeof ImageAssets]; // ← ahora es una imagen require()
 };
 
 export type QuizQuestion = {
@@ -16,11 +19,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'What do you prefer?',
     optionLeft: {
       label: 'Nature',
-      image: require('@/assets/images/beach.png'),
+      image: ImageAssets.beach,
     },
     optionRight: {
       label: 'City',
-      image: require('@/assets/images/mountain.png'),
+      image: ImageAssets.mountain,
     },
   },
   {
@@ -28,11 +31,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you like...',
     optionLeft: {
       label: 'Cold',
-      image: require('@/assets/images/cold.png'),
+      image: ImageAssets.cold,
     },
     optionRight: {
       label: 'Hot',
-      image: require('@/assets/images/hot.png'),
+      image: ImageAssets.hot,
     },
   },
   {
@@ -40,11 +43,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you prefer...',
     optionLeft: {
       label: 'Mountains',
-      image: require('@/assets/images/mountain.png'),
+      image: ImageAssets.mountain,
     },
     optionRight: {
       label: 'Beach',
-      image: require('@/assets/images/beach.png'),
+      image: ImageAssets.beach,
     },
   },
   {
@@ -52,11 +55,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you like...',
     optionLeft: {
       label: 'Adventure',
-      image: require('@/assets/images/adventure.png'),
+      image: ImageAssets.adventure,
     },
     optionRight: {
       label: 'Relax',
-      image: require('@/assets/images/relax.png'),
+      image: ImageAssets.relax,
     },
   },
   {
@@ -64,12 +67,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you prefer...',
     optionLeft: {
       label: 'Historic',
-      image: require('@/assets/images/historic.png'),
+      image: ImageAssets.historic,
     },
     optionRight: {
       label: 'Modern',
-      image: require('@/assets/images/modernCity.png'),
+      image: ImageAssets.modernCity,
     },
   },
-
 ];
