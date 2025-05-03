@@ -1,6 +1,6 @@
 export type QuizOption = {
   label: string;
-  image: '/assets/images/alex.png' | '/assets/images/eric.png';
+  image: '/assets/images/alex.png' | '/assets/images/eric.png' | '/assets/images/beach.png' | '/assets/images/mountain.png' | '/assets/images/cold.png' | '/assets/images/hot.png' | '/assets/images/historic.png' | '/assets/images/modernCity.png' | '/assets/images/relax.png' | '/assets/images/adventure.png' | '/assets/images/party.png';
 };
 
 export type QuizQuestion = {
@@ -16,11 +16,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'What do you prefer?',
     optionLeft: {
       label: 'Nature',
-      image: '/assets/images/eric.png',
+      image: require('@/assets/images/beach.png'),
     },
     optionRight: {
       label: 'City',
-      image: '/assets/images/eric.png',
+      image: require('@/assets/images/mountain.png'),
     },
   },
   {
@@ -28,11 +28,11 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you like...',
     optionLeft: {
       label: 'Cold',
-      image: '/assets/images/alex.png',
+      image: require('@/assets/images/cold.png'),
     },
     optionRight: {
       label: 'Hot',
-      image: '/assets/images/alex.png',
+      image: require('@/assets/images/hot.png'),
     },
   },
   {
@@ -40,35 +40,35 @@ export const quizQuestions: QuizQuestion[] = [
     question: 'Do you prefer...',
     optionLeft: {
       label: 'Mountains',
-      image: '/assets/images/eric.png',
+      image: require('@/assets/images/mountain.png'),
     },
     optionRight: {
       label: 'Beach',
-      image: '/assets/images/alex.png',
+      image: require('@/assets/images/beach.png'),
     },
   },
   {
     id: '4',
     question: 'Do you like...',
     optionLeft: {
-      label: 'Coffee',
-      image: '/assets/images/alex.png',
+      label: 'Adventure',
+      image: require('@/assets/images/adventure.png'),
     },
     optionRight: {
-      label: 'Tea',
-      image: '/assets/images/eric.png',
+      label: 'Relax',
+      image: require('@/assets/images/relax.png'),
     },
   },
   {
     id: '5',
     question: 'Do you prefer...',
     optionLeft: {
-      label: 'Cats',
-      image: '/assets/images/alex.png',
+      label: 'Historic',
+      image: require('@/assets/images/historic.png'),
     },
     optionRight: {
-      label: 'Dogs',
-      image: '/assets/images/eric.png',
+      label: 'Modern',
+      image: require('@/assets/images/modernCity.png'),
     },
   },
 

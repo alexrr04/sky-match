@@ -19,11 +19,6 @@ import Animated, {
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.25;
 
-const images = {
-  '/assets/images/alex.png': require('@/assets/images/alex.png'),
-  '/assets/images/eric.png': require('@/assets/images/eric.png'),
-};
-
 type Props = {
   optionLeft: QuizOption;
   optionRight: QuizOption;
@@ -81,7 +76,7 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
               <View style={styles.optionLeft}>
                 {optionLeft.image && (
                   <Image 
-                    source={images[optionLeft.image]}
+                    source={optionLeft.image}
                     style={styles.optionImage}
                     resizeMode="cover"
                   />
@@ -95,7 +90,7 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
               <View style={styles.optionRight}>
                 {optionRight.image && (
                   <Image 
-                    source={images[optionRight.image]}
+                    source={optionRight.image}
                     style={styles.optionImage}
                     resizeMode="cover"
                   />
