@@ -5,32 +5,121 @@ import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Animated, { 
+  useAnimatedStyle, 
+  withRepeat, 
+  withSequence, 
+  withTiming,
+  Easing
+} from 'react-native-reanimated';
 
 export default function QuizScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = quizQuestions[currentQuestionIndex];
 
   const handleSwipe = (direction: 'left' | 'right') => {
-    // Log user's choice
     console.log(`Question ${currentQuestionIndex + 1}: User chose ${direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight}`);
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      // Navigate to the next screen when all questions are answered
       router.push('/in-game');
     }
   };
 
-  // Reset rotation when question changes
-  useEffect(() => {
-    // This effect will run whenever the question index changes
-    // The SwipeCard component will reset its internal state
-  }, [currentQuestionIndex]);
+  // Animation styles
+  const baseAnimation = (startDeg: string, endDeg: string, duration: number) =>
+    withRepeat(
+      withSequence(
+        withTiming(startDeg, { 
+          duration,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
+        }),
+        withTiming(endDeg, { 
+          duration,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1)
+        })
+      ),
+      -1,
+      true
+    );
+
+  const iconAnimations = {
+    marker: useAnimatedStyle(() => ({
+      transform: [{ rotate: baseAnimation('-25deg', '-5deg', 2000) }]
+    })),
+    compass: useAnimatedStyle(() => ({
+      transform: [{ rotate: baseAnimation('25deg', '5deg', 2500) }]
+    })),
+    airplane: useAnimatedStyle(() => ({
+      transform: [{ rotate: baseAnimation('55deg', '35deg', 3000) }]
+    })),
+    map: useAnimatedStyle(() => ({
+      transform: [{ rotate: baseAnimation('-20deg', '0deg', 2800) }]
+    })),
+  };
 
   return (
     <View style={styles.container}>
+      <View style={styles.decorativeContainer}>
+        <Animated.View 
+          style={[
+            styles.decorativeIcon,
+            { top: height * 0.15, left: width * 0.1 },
+            iconAnimations.marker
+          ]}
+        >
+          <Ionicons 
+            name="location" 
+            size={90} 
+            color={Colors.light.primary}
+          />
+        </Animated.View>
+
+        <Animated.View 
+          style={[
+            styles.decorativeIcon,
+            { top: height * 0.3, right: width * 0.15 },
+            iconAnimations.compass
+          ]}
+        >
+          <Ionicons 
+            name="compass" 
+            size={80} 
+            color={Colors.light.accent}
+          />
+        </Animated.View>
+
+        <Animated.View 
+          style={[
+            styles.decorativeIcon,
+            { bottom: height * 0.12, left: width * 0.15 },
+            iconAnimations.airplane
+          ]}
+        >
+          <Ionicons 
+            name="airplane" 
+            size={80} 
+            color={Colors.light.primary}
+          />
+        </Animated.View>
+
+        <Animated.View 
+          style={[
+            styles.decorativeIcon,
+            { bottom: height * 0.2, right: width * 0.1 },
+            iconAnimations.map
+          ]}
+        >
+          <Ionicons 
+            name="map" 
+            size={75} 
+            color={Colors.light.accent}
+          />
+        </Animated.View>
+      </View>
+
       <View style={styles.progressContainer}>
         <ThemedText style={styles.progressText}>
           Question {currentQuestionIndex + 1}/{quizQuestions.length}
@@ -50,7 +139,11 @@ export default function QuizScreen() {
           {currentQuestion.question}
         </ThemedText>
         <View style={styles.hintContainer}>
-          <MaterialCommunityIcons name="gesture-swipe-horizontal" size={32} color={Colors.light.primary} />
+          <MaterialCommunityIcons 
+            name="gesture-swipe-horizontal" 
+            size={32} 
+            color={Colors.light.primary}
+          />
           <ThemedText style={styles.hintText}>Swipe left or right to choose</ThemedText>
         </View>
       </View>
@@ -67,12 +160,23 @@ export default function QuizScreen() {
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  decorativeContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
+  },
+  decorativeIcon: {
+    position: 'absolute',
+    opacity: 0.10,
+    zIndex: 0,
+  },
   container: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: width * 0.05,
     backgroundColor: Colors.light.background,
+    position: 'relative',
+    zIndex: 1,
   },
   progressContainer: {
     width: '100%',
