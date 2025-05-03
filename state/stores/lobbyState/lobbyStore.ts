@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-import { LobbyState } from '@/state/stores/lobbyState';
-import { lobbyStateLogger } from '@/state/stores/lobbyMiddleware';
+import { LobbyState } from '@/state/stores/lobbyState/lobbyState';
+import { lobbyStateLogger } from '@/state/stores/lobbyState/lobbyMiddleware';
 
 export const useLobbyStore = create<LobbyState>(
   lobbyStateLogger({ showOnlyChanges: true })((set, get) => ({

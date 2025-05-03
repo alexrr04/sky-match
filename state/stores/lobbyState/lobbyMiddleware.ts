@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
 import { createLogger } from '@/utils/logger';
 import { deepDiff } from '@/utils/stateDiff';
-import { LobbyState } from '@/state/stores/lobbyState';
+import { LobbyState } from '@/state/stores/lobbyState/lobbyState';
 
 const logger = createLogger('LobbyStateLogger');
 

@@ -1,5 +1,5 @@
 import { useLobbyStore } from './lobbyStore';
-import { LobbyState } from '@/state/stores/lobbyState';
+import { LobbyState } from '@/state/stores/lobbyState/lobbyState';
 import { useEffect, useState } from 'react';
 
 type LobbyStateKeys = keyof LobbyState;
