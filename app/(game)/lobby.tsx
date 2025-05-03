@@ -59,39 +59,50 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80, // Increased top padding for safe area
+    paddingTop: 80,
     paddingHorizontal: 20,
     position: 'relative',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8FAFC', // Light grey-blue background
   },
   groupCodeContainer: {
     marginBottom: 30,
-    backgroundColor: '##',
+    backgroundColor: '#EFF6FF', // Light blue background
     padding: 20,
     paddingVertical: 16,
     borderRadius: 16,
-    marginTop: -20, // Pull up slightly to balance the increased top padding
+    marginTop: -20,
+    borderWidth: 1,
+    borderColor: '#BFDBFE', // Subtle blue border
+    shadowColor: '#60A5FA',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   groupCodeLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 16,
+    color: '#3B82F6', // Bright blue
     textAlign: 'center',
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    fontWeight: '600',
   },
   groupCodeValue: {
-    fontSize: 38,
+    fontSize: 34,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#000',
+    color: '#1E40AF', // Dark blue
     letterSpacing: 1.5,
     paddingVertical: 8,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#1E293B', // Dark grey-blue
     marginBottom: 16,
   },
   memberList: {
@@ -102,24 +113,24 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: '#E2E8F0', // Light grey-blue border
     alignItems: 'center',
   },
   actionButton: {
     fontSize: 20,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2563EB', // Rich blue
     color: '#FFFFFF',
     borderRadius: 12,
     width: '100%',
     textAlign: 'center',
     fontWeight: 'bold',
-    shadowColor: '#000',
+    shadowColor: '#1E40AF',
     shadowOffset: {
       width: 0,
       height: 2,
