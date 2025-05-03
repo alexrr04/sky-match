@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
 import {
   GestureHandlerRootView,
   PanGestureHandler,
@@ -24,51 +26,65 @@ type Props = {
 
 export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe }) => {
   const translateX = useSharedValue(0);
-  const rotate = useSharedValue(0);
 
-  // Reset values when props change
   useEffect(() => {
     translateX.value = 0;
-    rotate.value = 0;
   }, [optionLeft, optionRight]);
 
-  const gestureHandler = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
+  const gestureHandler = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    { startX: number }
+  >({
+    onStart: () => {
+      translateX.value = 0;
+    },
     onActive: (event) => {
       translateX.value = event.translationX;
-      rotate.value = event.translationX / 20;
     },
     onEnd: () => {
-      if (translateX.value > SWIPE_THRESHOLD) {
-        translateX.value = withSpring(width, {}, () => {
-          runOnJS(onSwipe)('right');
-          translateX.value = 0;
-        });
-      } else if (translateX.value < -SWIPE_THRESHOLD) {
-        translateX.value = withSpring(-width, {}, () => {
-          runOnJS(onSwipe)('left');
-          translateX.value = 0;
-        });
-      } else {
-        translateX.value = withSpring(0);
-        rotate.value = withSpring(0);
+      const swipeDistance = translateX.value;
+      if (swipeDistance > SWIPE_THRESHOLD) {
+        runOnJS(onSwipe)('right');
+      } else if (swipeDistance < -SWIPE_THRESHOLD) {
+        runOnJS(onSwipe)('left');
       }
-    },
+      translateX.value = withSpring(0);
+    }
   });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { rotate: `${rotate.value}deg` },
-    ],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    const rotation = translateX.value / 25;
+    const scale = Math.abs(translateX.value) > SWIPE_THRESHOLD ? 0.95 : 1;
+    
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { rotate: `${rotation}deg` },
+        { scale },
+      ],
+    };
+  });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PanGestureHandler onGestureEvent={gestureHandler}>
-        <Animated.View style={[styles.card, animatedStyle]}>
+        <Animated.View 
+          style={[
+            styles.card, 
+            animatedStyle, 
+            { backgroundColor: '#fff' }
+          ]}
+>
           <View style={styles.optionContainer}>
-            <Text style={styles.optionText}>{optionLeft}</Text>
-            <Text style={styles.optionText}>{optionRight}</Text>
+            <View style={styles.optionLeft}>
+              <Ionicons name="arrow-back-circle" size={24} color={Colors.light.accent} />
+              <Text style={[styles.optionText, styles.leftText]}>{optionLeft}</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.optionRight}>
+              <Text style={[styles.optionText, styles.rightText]}>{optionRight}</Text>
+              <Ionicons name="arrow-forward-circle" size={24} color={Colors.light.primary} />
+            </View>
           </View>
         </Animated.View>
       </PanGestureHandler>
@@ -77,10 +93,17 @@ export const SwipeCard: React.FC<Props> = ({ optionLeft, optionRight, onSwipe })
 };
 
 const styles = StyleSheet.create({
+  divider: {
+    width: 2,
+    height: '80%',
+    backgroundColor: Colors.light.secondary,
+    opacity: 0.5,
+  },
   card: {
     width: width * 0.85,
     height: height * 0.3,
     backgroundColor: '#fff',
+    overflow: 'hidden',
     borderRadius: width * 0.05,
     padding: width * 0.05,
     justifyContent: 'space-between',
@@ -103,14 +126,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: width * 0.03,
+  },
+  optionLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: width * 0.04,
+    gap: 12,
+  },
+  optionRight: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingRight: width * 0.04,
+    gap: 12,
   },
   optionText: {
-    fontSize: Math.min(width * 0.045, 20),
+    fontSize: Math.min(width * 0.04, 18),
     fontWeight: 'bold',
-    color: '#333',
-    width: '45%',
-    textAlign: 'center',
-    padding: width * 0.02,
+    flex: 1,
+  },
+  leftText: {
+    color: Colors.light.accent,
+    textAlign: 'left',
+  },
+  rightText: {
+    color: Colors.light.primary,
+    textAlign: 'right',
   },
 });
