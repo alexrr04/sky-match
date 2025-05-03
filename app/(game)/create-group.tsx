@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -108,12 +108,19 @@ export default function CreateGroup() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>Create Trip Group</Text>
-          <Animated.View style={[styles.iconContainer, iconStyle]}>
-            <MaterialIcons name="group-add" size={36} color={Colors.light.primary} />
-          </Animated.View>
-        </View>
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => router.replace('/')}
+      >
+        <MaterialIcons name="arrow-back" size={28} color={Colors.light.primary} />
+      </TouchableOpacity>
+
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Create Trip Group</Text>
+        <Animated.View style={[styles.iconContainer, iconStyle]}>
+          <MaterialIcons name="group-add" size={36} color={Colors.light.primary} />
+        </Animated.View>
+      </View>
         
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Your Name</Text>
@@ -171,6 +178,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
   },
+  backButton: {
+    position: 'absolute',
+    top: height * 0.02,
+    left: width * 0.05,
+    zIndex: 1,
+    padding: 8,
+    backgroundColor: Colors.light.secondary + '20',
+    borderRadius: 8,
+  },
   scrollView: {
     flex: 1,
   },
@@ -181,7 +197,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: height * 0.03,
+    marginTop: height * 0.06,
+    marginBottom: height * 0.02,
   },
   title: {
     fontSize: Math.min(width * 0.08, 32),

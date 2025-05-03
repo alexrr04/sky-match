@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: height * 0.02,
     paddingHorizontal: width * 0.1,
+    zIndex: 2,
   },
   popup: {
     position: 'absolute',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
-    zIndex: 2,
+    zIndex: 3,
   },
   popupVisible: {
     display: 'flex',
