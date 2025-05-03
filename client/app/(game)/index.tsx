@@ -61,7 +61,11 @@ export default function MainScreen() {
             placeholder="Group Code"
             placeholderTextColor={Colors.light.placeholder}
           />
-          <PrimaryButton label="Confirm" onPress={handleConfirmGroupCode} />
+          <PrimaryButton
+            label="Join"
+            onPress={handleConfirmGroupCode}
+            disabled={!userName || !groupCode}
+          />
         </View>
       )}
       <View style={[styles.buttonContainer, showPopup && styles.dimmed]}>
@@ -117,6 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     elevation: 5,
+    zIndex: 2,
   },
   popupText: {
     fontSize: 18,
