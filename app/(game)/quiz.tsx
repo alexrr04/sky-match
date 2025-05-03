@@ -127,7 +127,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="location" 
             size={90} 
-            color='#D94895'
+            color={Colors.light.accent}
           />
         </Animated.View>
 
@@ -141,7 +141,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="compass" 
             size={80} 
-            color='#F0782F'
+            color={Colors.light.primary}
           />
         </Animated.View>
 
@@ -169,7 +169,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="map" 
             size={75} 
-            color='#CED948'
+            color={Colors.light.accent}
           />
         </Animated.View>
 
@@ -183,7 +183,7 @@ export default function QuizScreen() {
           <Ionicons 
             name="earth" 
             size={70} 
-            color='#5AD948'
+            color={Colors.light.neutralDark}
           />
         </Animated.View>
       </View>
