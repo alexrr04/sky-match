@@ -1,6 +1,7 @@
 import { View, StyleSheet } from 'react-native';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Button } from '@react-navigation/elements';
+import { Colors } from '@/constants/Colors';
 
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
@@ -20,6 +21,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    backgroundColor: Colors.light.background,
     alignItems: 'center',
   },
   title: {
@@ -29,7 +31,7 @@ const styles = StyleSheet.create({
   startButton: {
     fontSize: 18,
     padding: 10,
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.light.primary,
     color: '#FFFFFF',
     borderRadius: 8,
   },
