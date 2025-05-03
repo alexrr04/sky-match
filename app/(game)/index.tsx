@@ -33,24 +33,22 @@ export default function MainScreen() {
   const popupScale = useSharedValue(0);
 
   useEffect(() => {
-    // Initial animations
-    logoScale.value = withSpring(1, {
-      mass: 1,
-      damping: 12,
-      stiffness: 100,
-    });
+    // Initial animations with single sequence
+    logoScale.value = withSequence(
+      withSpring(1, {
+        mass: 1,
+        damping: 12,
+        stiffness: 100,
+      }),
+      withDelay(1000, 
+        withSequence(
+          withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+        )
+      )
+    );
     titleOpacity.value = withDelay(400, withTiming(1, { duration: 800 }));
     buttonContainerOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
-
-    // Continuous subtle scale animation for logo
-    logoScale.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
   }, []);
 
   useEffect(() => {
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
   logo: {
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
-    marginBottom: height * 0.02,
+    marginBottom: height * 0.002,
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
