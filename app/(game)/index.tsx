@@ -4,6 +4,7 @@ import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
 import PrimaryButton from '@/components/PrimaryButton';
+import { Button } from '@react-navigation/elements';
 
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
@@ -63,9 +64,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: Colors.light.background,
+    alignItems: 'center',
     padding: 20,
+  },
+  dimmed: {
+    opacity: 0.5,
   },
   logo: {
     width: 300,
@@ -108,7 +112,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 20,
   },
-  dimmed: {
-    opacity: 0.5,
+  startButton: {
+    fontSize: 18,
+    padding: 10,
+    backgroundColor: Colors.light.primary,
+    color: '#FFFFFF',
+    borderRadius: 8,
   },
 });
