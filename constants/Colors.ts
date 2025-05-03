@@ -10,6 +10,7 @@ export const Colors = {
     primary: '#0770E3',             
     secondary: '#90BFF2',          
     accent: '#FF0048',         
-    neutralDark: '#04458B'   
+    neutralDark: '#04458B',
+    buttonText: '#FEFEFF'   
   },
 };
