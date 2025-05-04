@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from 'react-native';
 import React, { useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
@@ -12,12 +13,12 @@ import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
 import PrimaryButton from '@/components/PrimaryButton';
 import { MaterialIcons } from '@expo/vector-icons';
+import { socket } from '@/utils/socket';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
   withSequence,
-  withRepeat,
   useSharedValue,
   withDelay,
   Easing,
@@ -27,11 +28,18 @@ const { width, height } = Dimensions.get('window');
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+interface JoinLobbyResponse {
+  success: boolean;
+  lobbyCode?: string;
+  message?: string;
+}
+
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
   const [showPopup, setShowPopup] = React.useState(false);
   const [groupCode, setGroupCode] = React.useState('');
   const [userName, setUserName] = React.useState('');
+  const [isJoining, setIsJoining] = React.useState(false);
 
   // Animation values
   const logoScale = useSharedValue(0.8);
@@ -70,6 +78,10 @@ export default function MainScreen() {
       popupScale.value = withSpring(1);
     } else {
       popupScale.value = withTiming(0);
+      // Clear form when closing popup
+      setGroupCode('');
+      setUserName('');
+      setIsJoining(false);
     }
   }, [showPopup]);
 
@@ -109,7 +121,30 @@ export default function MainScreen() {
   };
 
   const handleConfirmGroupCode = () => {
-    navigateTo('/lobby');
+    if (!userName.trim() || !groupCode.trim()) {
+      Alert.alert('Error', 'Please enter both your name and the group code');
+      return;
+    }
+
+    setIsJoining(true);
+    socket.emit(
+      'joinLobby',
+      { lobbyCode: groupCode.toUpperCase(), name: userName.trim() },
+      (response: JoinLobbyResponse) => {
+        setIsJoining(false);
+        if (response.success) {
+          // Store the lobby code for future use
+          socket.emit('storeLobbyCode', { lobbyCode: groupCode.toUpperCase() });
+          setShowPopup(false);
+          navigateTo('lobby');
+        } else {
+          Alert.alert(
+            'Error',
+            response.message || 'Failed to join the group. Please try again.'
+          );
+        }
+      }
+    );
   };
 
   return (
@@ -141,6 +176,7 @@ export default function MainScreen() {
             onChangeText={setUserName}
             placeholder="Enter your name"
             placeholderTextColor={Colors.light.placeholder}
+            editable={!isJoining}
           />
         </View>
 
@@ -149,16 +185,19 @@ export default function MainScreen() {
           <TextInput
             style={styles.input}
             value={groupCode}
-            onChangeText={setGroupCode}
+            onChangeText={(text) => setGroupCode(text.toUpperCase())}
             placeholder="Enter group code"
             placeholderTextColor={Colors.light.placeholder}
+            autoCapitalize="characters"
+            maxLength={6}
+            editable={!isJoining}
           />
         </View>
 
         <PrimaryButton
-          label="Join Group"
+          label={isJoining ? 'Joining...' : 'Join Group'}
           onPress={handleConfirmGroupCode}
-          disabled={!userName || !groupCode}
+          disabled={!userName || !groupCode || isJoining}
         />
       </Animated.View>
 
@@ -198,13 +237,13 @@ const styles = StyleSheet.create({
   logo: {
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
-    marginBottom: -height * 0.06, // Negative margin to compensate for the PNG's built-in margin
+    marginBottom: -height * 0.06,
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.2, // Increased spacing between title and buttons
+    marginBottom: height * 0.2,
   },
   buttonContainer: {
     width: '100%',
