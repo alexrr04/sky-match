@@ -13,6 +13,7 @@ interface MemberPreferences {
   Nightlife: boolean;
   "Quiet evenings": boolean;
   "Good food": boolean;
+  [key: string]: string | number | boolean;
 }
 
 interface FriendGroup {
@@ -31,7 +32,7 @@ const sameOriginGroup: FriendGroup = {
     {
       name: "Maria",
       originAirport: "BCN",
-      budget: 100,
+      budget: 250,
       Relax: true,
       Adventure: false,
       Cold: false,
@@ -47,7 +48,7 @@ const sameOriginGroup: FriendGroup = {
     {
       name: "Alex",
       originAirport: "BCN",
-      budget: 200,
+      budget: 300,
       Relax: false,
       Adventure: true,
       Cold: true,
@@ -104,7 +105,7 @@ const multiOriginGroup: FriendGroup = {
     {
       name: "Pierre",
       originAirport: "CDG",
-      budget: 200,
+      budget: 400,
       Relax: true,
       Adventure: true,
       Cold: false,
@@ -121,4 +122,4 @@ const multiOriginGroup: FriendGroup = {
 };
 
 export type { MemberPreferences, FriendGroup };
-module.exports = { sameOriginGroup, multiOriginGroup };
+export { sameOriginGroup, multiOriginGroup };

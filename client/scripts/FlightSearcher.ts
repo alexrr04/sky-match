@@ -1,14 +1,15 @@
-const { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } = require('./config');
+import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from './config.js';
 
 interface FlightOption {
   destination: string;
-  price: number;
   outboundFlight: {
     airline: string;
+    price: number;
     isDirect: boolean;
   };
-  returnFlight?: {
+  returnFlight: {
     airline: string;
+    price: number;
     isDirect: boolean;
   };
 }
@@ -25,7 +26,10 @@ interface FlightSearchRequest {
         };
       };
       destinationPlace: {
-        anywhere: boolean;
+        anywhere?: boolean;
+        queryPlace?: {
+          iata: string;
+        };
       };
       fixedDate: {
         year: number;
@@ -36,7 +40,11 @@ interface FlightSearchRequest {
   };
 }
 
-function parseDate(dateStr: string): { year: number; month: number; day: number } {
+function parseDate(dateStr: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const [year, month, day] = dateStr.split('-').map(Number);
   return { year, month, day };
 }
@@ -48,7 +56,8 @@ async function findDestinationsWithinBudget(
   maxBudget: number
 ): Promise<FlightOption[]> {
   try {
-    const searchRequest: FlightSearchRequest = {
+    // Search outbound flights
+    const outboundRequest: FlightSearchRequest = {
       query: {
         market: 'ES',
         locale: 'en-GB',
@@ -57,52 +66,118 @@ async function findDestinationsWithinBudget(
           {
             originPlace: {
               queryPlace: {
-                iata: origin
-              }
+                iata: origin,
+              },
             },
             destinationPlace: {
-              anywhere: true
+              anywhere: true,
             },
-            fixedDate: parseDate(departureDate)
-          }
-        ]
-      }
+            fixedDate: parseDate(departureDate),
+          },
+        ],
+      },
     };
 
     const headers = new Headers();
     headers.append('x-api-key', SKYSCANNER_API_KEY);
     headers.append('Content-Type', 'application/json');
 
-    const response = await fetch(SKYSCANNER_API_URL, {
+    const outboundResponse = await fetch(SKYSCANNER_API_URL, {
       method: 'POST',
       headers,
-      body: JSON.stringify(searchRequest)
+      body: JSON.stringify(outboundRequest),
     });
 
-    const data = await response.json();
-    if (!data?.content?.results) {
+    const outboundData = await outboundResponse.json();
+    if (!outboundData?.content?.results) {
       return [];
     }
 
-    const { quotes, carriers, places } = data.content.results;
+    const {
+      quotes: outboundQuotes,
+      carriers: outboundCarriers,
+      places,
+    } = outboundData.content.results;
     const flightOptions: FlightOption[] = [];
 
-    for (const quote of Object.values(quotes as Record<string, any>)) {
+    // Process outbound flights
+    for (const quote of Object.values(outboundQuotes as Record<string, any>)) {
       const destination = places[quote.outboundLeg.destinationPlaceId];
-      const airline = carriers[quote.outboundLeg.marketingCarrierId];
-      const price = parseInt(quote.minPrice.amount);
+      const destinationIata = destination.iata;
+      const outboundPrice = parseInt(quote.minPrice.amount);
 
-      flightOptions.push({
-        destination: `${destination.name} (${destination.iata})`,
-        price: price,
-        outboundFlight: {
-          airline: airline.name,
-          isDirect: quote.isDirect
-        }
+      // Search return flights for this destination
+      const returnRequest: FlightSearchRequest = {
+        query: {
+          market: 'ES',
+          locale: 'en-GB',
+          currency: 'EUR',
+          queryLegs: [
+            {
+              originPlace: {
+                queryPlace: {
+                  iata: destinationIata,
+                },
+              },
+              destinationPlace: {
+                queryPlace: {
+                  iata: origin,
+                },
+              },
+              fixedDate: parseDate(returnDate),
+            },
+          ],
+        },
+      };
+
+      const returnResponse = await fetch(SKYSCANNER_API_URL, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(returnRequest),
       });
+
+      const returnData = await returnResponse.json();
+      if (!returnData?.content?.results?.quotes) {
+        continue;
+      }
+
+      const { quotes: returnQuotes, carriers: returnCarriers } =
+        returnData.content.results;
+
+      for (const returnQuote of Object.values(
+        returnQuotes as Record<string, any>
+      )) {
+        const outboundAirline =
+          outboundCarriers[quote.outboundLeg.marketingCarrierId];
+        const returnAirline =
+          returnCarriers[returnQuote.outboundLeg.marketingCarrierId];
+        const returnPrice = parseInt(returnQuote.minPrice.amount);
+
+        // Only include if total price is within budget
+        if (outboundPrice + returnPrice <= maxBudget) {
+          flightOptions.push({
+            destination: `${destination.name} (${destinationIata})`,
+            outboundFlight: {
+              airline: outboundAirline.name,
+              price: outboundPrice,
+              isDirect: quote.isDirect,
+            },
+            returnFlight: {
+              airline: returnAirline.name,
+              price: returnPrice,
+              isDirect: returnQuote.isDirect,
+            },
+          });
+        }
+      }
     }
 
-    return flightOptions.sort((a, b) => a.price - b.price);
+    return flightOptions.sort(
+      (a, b) =>
+        a.outboundFlight.price +
+        a.returnFlight.price -
+        (b.outboundFlight.price + b.returnFlight.price)
+    );
   } catch (error) {
     console.error('Error searching flights:', error);
     return [];
@@ -118,15 +193,28 @@ async function main() {
     500
   );
 
-  result.forEach(option => {
-    console.log(`${option.destination}: €${option.price}`);
-    console.log(`  ${option.outboundFlight.airline}${option.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'}`);
+  result.forEach((option) => {
+    console.log(`${option.destination}`);
+    console.log(
+      `Outbound: ${option.outboundFlight.airline} - €${
+        option.outboundFlight.price
+      }${option.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'}`
+    );
+    console.log(
+      `Return: ${option.returnFlight.airline} - €${option.returnFlight.price}${
+        option.returnFlight.isDirect ? ' (direct)' : ' (with stops)'
+      }`
+    );
+    console.log(
+      `Total: €${option.outboundFlight.price + option.returnFlight.price}`
+    );
     console.log('-----------------------------------');
   });
 }
 
-if (require.main === module) {
+// Run main function if this is the entry point
+if (process.argv[1] === import.meta.url) {
   main().catch(console.error);
 }
 
-module.exports = { findDestinationsWithinBudget };
+export { findDestinationsWithinBudget };
