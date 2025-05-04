@@ -8,6 +8,8 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { getDestination } from '@/constants/Destinations';
 import { Colors } from '@/constants/Colors';
+import airportsWithAttributes from '@/constants/airports_with_attributes.json';
+import { AirportAttributes } from '@/constants/types';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import Animated, { 
   useAnimatedStyle, 
@@ -106,7 +108,7 @@ export default function EndGameScreen() {
             </ThemedText>
             <View style={styles.countryContainer}>
               <ThemedText style={styles.countryName}>
-                Score: {(destination.finalScore * 100).toFixed(1)}%
+                {(airportsWithAttributes as AirportAttributes[]).find(a => a.iata === iata)?.country}
               </ThemedText>
                 <TouchableOpacity onPress={handleDownload}>
                   <Animated.View style={downloadButtonStyle}>
@@ -120,8 +122,6 @@ export default function EndGameScreen() {
           {/* Description */}
           <View style={styles.section}>
           <ThemedText style={styles.description}>
-            Match Score: {(destination.matchScore * 100).toFixed(1)}%{'\n'}
-            Cost Efficiency: {(destination.costScore * 100).toFixed(1)}%{'\n'}
             Total Group Cost: €{destination.totalGroupCost}
           </ThemedText>
           </View>
@@ -137,7 +137,7 @@ export default function EndGameScreen() {
                     <View key={index} style={styles.characteristicItem}>
                       <FontAwesome5 name="check-circle" size={16} color={Colors.light.primary} />
                       <ThemedText style={styles.characteristicText}>
-                        {attr} ({(detail.score * 100).toFixed(0)}%)
+                        {attr}
                       </ThemedText>
                     </View>
                   )
