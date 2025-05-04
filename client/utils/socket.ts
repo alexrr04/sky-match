@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 // Create a single socket instance that will be shared across the app
-export const socket = io('http://10.0.2.2:3000');
+export const socket = io('https://www.skymatch.us');
 
 // Add listeners for connection status
 socket.on('connect', () => {
