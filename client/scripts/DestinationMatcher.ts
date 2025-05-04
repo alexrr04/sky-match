@@ -1,5 +1,6 @@
 import { findDestinationsWithinBudget } from './FlightSearcher.js';
 import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
+import { Member, GroupInput, GroupDestination, AirportInfo } from './types';
 
 interface Member {
   name: string;
@@ -348,3 +349,4 @@ if (import.meta.url === new URL(process.argv[1], 'file:').href) {
 }
 
 export { findBestMatchingDestinations, displayMatchingDestinations };
+export type { GroupDestination };

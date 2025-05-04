@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigate } from '@/hooks/useNavigate';
+import { router } from 'expo-router';
+import { useTripStore } from '@/state/stores/tripState/tripState';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
 import { getDestination } from '@/constants/Destinations';
 import { Colors } from '@/constants/Colors';
+import airportsWithAttributes from '@/constants/airports_with_attributes.json';
+import { AirportAttributes } from '@/constants/types';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import Animated, { 
   useAnimatedStyle, 
@@ -18,7 +21,6 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const { width, height } = Dimensions.get('window');
 
 export default function EndGameScreen() {
-  const { navigateTo } = useNavigate();
   const backgroundColor = useThemeColor({}, 'background');
   const confettiRef = useRef<ConfettiCannon>(null);
 
@@ -43,21 +45,45 @@ export default function EndGameScreen() {
     transform: [{ scale: scale.value }]
   }));
 
-  // TODO: Get actual preferences from state once implemented
-  const demoPreferences = {
-    weather: 'hot' as const,
-    setting: 'beach' as const,
-    activity: 'relax' as const,
-    environment: 'historic' as const,
-    food: 'yes' as const,
-    lifestyle: 'sleep' as const
+  const { getSelectedDestination, getDestinationImage } = useTripStore();
+  const handleReturnHome = () => {
+    router.replace('/(game)' as any);
   };
 
-  const destination = getDestination(demoPreferences);
+  const destination = getSelectedDestination();
 
-  const handleReturnHome= () => {
-    navigateTo('/');
-  };
+  if (!destination) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
+        <View style={[styles.contentContainer, styles.noDestinationContainer]}>
+          <View style={styles.noDestinationContent}>
+            <MaterialIcons 
+              name="search-off" 
+              size={80} 
+              color={Colors.light.primary} 
+              style={styles.noDestinationIcon}
+            />
+            <ThemedText style={[styles.congratsText, styles.noDestinationText]}>
+              No Perfect Match Found
+            </ThemedText>
+            <ThemedText style={styles.noDestinationSubtext}>
+              We couldn&apos;t find a destination that matches all your group&apos;s preferences. Try adjusting your criteria and try again.
+            </ThemedText>
+          </View>
+          <View style={styles.bottomButton}>
+            <PrimaryButton
+              onPress={handleReturnHome}
+              label="Return Home"
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const iata = destination.destination.split(' (')[1].replace(')', '');
+  const destinationName = destination.destination.split(' (')[0];
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
@@ -88,18 +114,21 @@ export default function EndGameScreen() {
 
           {/* Destination Card */}
           <View style={styles.destinationCard}>
-            <Image
-              source={{ uri: destination.imageUrl }}
-              style={styles.destinationImage}
-            />
+            {getDestinationImage() && (
+              <Image
+                source={{ uri: getDestinationImage()! }}
+                style={styles.destinationImage}
+                resizeMode="cover"
+              />
+            )}
             <View style={styles.destinationInfo}>
-              <ThemedText style={styles.cityName}>
-                {destination.city}
+            <ThemedText style={styles.cityName}>
+              {destinationName}
+            </ThemedText>
+            <View style={styles.countryContainer}>
+              <ThemedText style={styles.countryName}>
+                {(airportsWithAttributes as AirportAttributes[]).find(a => a.iata === iata)?.country}
               </ThemedText>
-              <View style={styles.countryContainer}>
-                <ThemedText style={styles.countryName}>
-                  {destination.country}
-                </ThemedText>
                 <TouchableOpacity onPress={handleDownload}>
                   <Animated.View style={downloadButtonStyle}>
                     <MaterialIcons name="file-download" size={20} color={Colors.light.primary} />
@@ -111,21 +140,27 @@ export default function EndGameScreen() {
 
           {/* Description */}
           <View style={styles.section}>
-            <ThemedText style={styles.description}>
-              {destination.description}
-            </ThemedText>
+          <ThemedText style={styles.description}>
+            Total Group Cost: €{destination.totalGroupCost}
+          </ThemedText>
           </View>
 
           {/* Characteristics */}
           <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Highlights</ThemedText>
             <View style={styles.characteristicsContainer}>
-              {destination.characteristics.map((char, index) => (
-                <View key={index} style={styles.characteristicItem}>
-                  <FontAwesome5 name="check-circle" size={16} color={Colors.light.primary} />
-                  <ThemedText style={styles.characteristicText}>{char}</ThemedText>
-                </View>
-              ))}
+              {Object.entries(destination.matchDetails)
+                .sort((a, b) => b[1].score - a[1].score)
+                .map(([attr, detail], index) => (
+                  detail.matches.length > 0 && (
+                    <View key={index} style={styles.characteristicItem}>
+                      <FontAwesome5 name="check-circle" size={16} color={Colors.light.primary} />
+                      <ThemedText style={styles.characteristicText}>
+                        {attr}
+                      </ThemedText>
+                    </View>
+                  )
+                ))}
             </View>
           </View>
 
@@ -133,24 +168,27 @@ export default function EndGameScreen() {
           <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Flight Information</ThemedText>
             <View style={styles.flightCard}>
-              <View style={styles.flightDetail}>
-                <FontAwesome5 name="plane" size={16} color={Colors.light.primary} />
-                <ThemedText style={styles.flightText}>
-                  {destination.flight.airline}
-                </ThemedText>
-              </View>
-              <View style={styles.flightDetail}>
-                <FontAwesome5 name="clock" size={16} color={Colors.light.primary} />
-                <ThemedText style={styles.flightText}>
-                  {destination.flight.duration}
-                </ThemedText>
-              </View>
-              <View style={styles.flightDetail}>
-                <FontAwesome5 name="euro-sign" size={16} color={Colors.light.primary} />
-                <ThemedText style={styles.flightText}>
-                  {destination.flight.price}
-                </ThemedText>
-              </View>
+              {Object.entries(destination.memberFlights).map(([memberName, flights], index) => (
+                <View key={index}>
+                  <ThemedText style={styles.flightHeader}>
+                    {memberName} ({flights.origin} → {iata})
+                  </ThemedText>
+                  <View style={styles.flightDetail}>
+                    <FontAwesome5 name="plane" size={16} color={Colors.light.primary} />
+                    <ThemedText style={styles.flightText}>
+                      Outbound: {flights.outboundFlight.airline} - €{flights.outboundFlight.price}
+                      {flights.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.flightDetail}>
+                    <FontAwesome5 name="plane" size={16} color={Colors.light.primary} style={{ transform: [{ rotate: '180deg' }] }} />
+                    <ThemedText style={styles.flightText}>
+                      Return: {flights.returnFlight.airline} - €{flights.returnFlight.price}
+                      {flights.returnFlight.isDirect ? ' (direct)' : ' (with stops)'}
+                    </ThemedText>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
           
@@ -167,6 +205,35 @@ export default function EndGameScreen() {
 }
 
 const styles = StyleSheet.create({
+  noDestinationContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  noDestinationContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: width * 0.1,
+  },
+  noDestinationIcon: {
+    marginBottom: height * 0.03,
+    opacity: 0.9,
+  },
+  noDestinationText: {
+    color: Colors.light.primary,
+    marginBottom: height * 0.02,
+  },
+  noDestinationSubtext: {
+    fontSize: 16,
+    color: Colors.light.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  bottomButton: {
+    width: '100%',
+    paddingHorizontal: width * 0.1,
+    marginBottom: height * 0.05,
+  },
   container: {
     flex: 1,
   },
@@ -264,6 +331,13 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     color: Colors.light.primary,
+  },
+  flightHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.light.primary,
+    marginBottom: 8,
+    marginTop: 12,
   },
   flightCard: {
     backgroundColor: Colors.light.secondary + '20',
