@@ -16,9 +16,9 @@ export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
     <View style={styles.cardContainer}>
       <View style={styles.card}>
         <View style={styles.leftSection}>
-          <Ionicons 
-            name="person" 
-            size={22} 
+          <Ionicons
+            name="person"
+            size={22}
             color={Colors.light.neutralDark}
             style={styles.personIcon}
           />
@@ -27,9 +27,9 @@ export const GroupMemberCard: React.FC<Props> = ({ name, isHost = false }) => {
 
         {isHost && (
           <View style={styles.hostBadge}>
-            <MaterialCommunityIcons 
-              name="crown" 
-              size={16} 
+            <MaterialCommunityIcons
+              name="crown"
+              size={16}
               color={Colors.light.background}
             />
             <Text style={styles.hostText}>Host</Text>

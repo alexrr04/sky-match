@@ -1,16 +1,24 @@
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import React, { useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
 import { Image } from 'expo-image';
 import PrimaryButton from '@/components/PrimaryButton';
 import { MaterialIcons } from '@expo/vector-icons';
+import { socket } from '@/utils/socket';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
   withSequence,
-  withRepeat,
   useSharedValue,
   withDelay,
   Easing,
@@ -20,11 +28,18 @@ const { width, height } = Dimensions.get('window');
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+interface JoinLobbyResponse {
+  success: boolean;
+  lobbyCode?: string;
+  message?: string;
+}
+
 export default function MainScreen() {
   const { navigateTo } = useNavigate();
   const [showPopup, setShowPopup] = React.useState(false);
   const [groupCode, setGroupCode] = React.useState('');
   const [userName, setUserName] = React.useState('');
+  const [isJoining, setIsJoining] = React.useState(false);
 
   // Animation values
   const logoScale = useSharedValue(0.8);
@@ -40,15 +55,22 @@ export default function MainScreen() {
         damping: 12,
         stiffness: 100,
       }),
-      withDelay(1000, 
+      withDelay(
+        1000,
         withSequence(
-          withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.05, {
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+          }),
           withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
         )
       )
     );
     titleOpacity.value = withDelay(400, withTiming(1, { duration: 800 }));
-    buttonContainerOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
+    buttonContainerOpacity.value = withDelay(
+      800,
+      withTiming(1, { duration: 800 })
+    );
   }, []);
 
   useEffect(() => {
@@ -56,6 +78,10 @@ export default function MainScreen() {
       popupScale.value = withSpring(1);
     } else {
       popupScale.value = withTiming(0);
+      // Clear form when closing popup
+      setGroupCode('');
+      setUserName('');
+      setIsJoining(false);
     }
   }, [showPopup]);
 
@@ -73,7 +99,11 @@ export default function MainScreen() {
   const buttonContainerStyle = useAnimatedStyle(() => ({
     opacity: buttonContainerOpacity.value,
     transform: [
-      { translateY: withTiming(buttonContainerOpacity.value * -20, { duration: 800 }) },
+      {
+        translateY: withTiming(buttonContainerOpacity.value * -20, {
+          duration: 800,
+        }),
+      },
     ],
   }));
 
@@ -91,7 +121,30 @@ export default function MainScreen() {
   };
 
   const handleConfirmGroupCode = () => {
-    navigateTo('/lobby');
+    if (!userName.trim() || !groupCode.trim()) {
+      Alert.alert('Error', 'Please enter both your name and the group code');
+      return;
+    }
+
+    setIsJoining(true);
+    socket.emit(
+      'joinLobby',
+      { lobbyCode: groupCode.toUpperCase(), name: userName.trim() },
+      (response: JoinLobbyResponse) => {
+        setIsJoining(false);
+        if (response.success) {
+          // Store the lobby code for future use
+          socket.emit('storeLobbyCode', { lobbyCode: groupCode.toUpperCase() });
+          setShowPopup(false);
+          navigateTo('lobby');
+        } else {
+          Alert.alert(
+            'Error',
+            response.message || 'Failed to join the group. Please try again.'
+          );
+        }
+      }
+    );
   };
 
   return (
@@ -101,21 +154,20 @@ export default function MainScreen() {
         style={[styles.logo, logoStyle]}
         contentFit="contain"
       />
-      
-      <Animated.Text style={[styles.text, titleStyle]}>
-        SkyMatch
-      </Animated.Text>
+      <Animated.Text style={[styles.text, titleStyle]}>SkyMatch</Animated.Text>
 
-      <Animated.View style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}>
-        <TouchableOpacity 
-          style={styles.closeButton} 
+      <Animated.View
+        style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}
+      >
+        <TouchableOpacity
+          style={styles.closeButton}
           onPress={() => setShowPopup(false)}
         >
           <MaterialIcons name="close" size={24} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.popupTitle}>Join a Group</Text>
-        
+
         <View style={styles.inputContainer}>
           <MaterialIcons name="person" size={24} color={Colors.light.primary} />
           <TextInput
@@ -124,6 +176,7 @@ export default function MainScreen() {
             onChangeText={setUserName}
             placeholder="Enter your name"
             placeholderTextColor={Colors.light.placeholder}
+            editable={!isJoining}
           />
         </View>
 
@@ -132,28 +185,37 @@ export default function MainScreen() {
           <TextInput
             style={styles.input}
             value={groupCode}
-            onChangeText={setGroupCode}
+            onChangeText={(text) => setGroupCode(text.toUpperCase())}
             placeholder="Enter group code"
             placeholderTextColor={Colors.light.placeholder}
+            autoCapitalize="characters"
+            maxLength={6}
+            editable={!isJoining}
           />
         </View>
 
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleConfirmGroupCode} 
-          disabled={!userName || !groupCode}
+        <PrimaryButton
+          label={isJoining ? 'Joining...' : 'Join Group'}
+          onPress={handleConfirmGroupCode}
+          disabled={!userName || !groupCode || isJoining}
         />
       </Animated.View>
 
-      <Animated.View style={[styles.buttonContainer, buttonContainerStyle, showPopup && styles.dimmed]}>
-        <PrimaryButton 
-          label="Create Group" 
-          onPress={handleCreateGroup} 
+      <Animated.View
+        style={[
+          styles.buttonContainer,
+          buttonContainerStyle,
+          showPopup && styles.dimmed,
+        ]}
+      >
+        <PrimaryButton
+          label="Create Group"
+          onPress={handleCreateGroup}
           disabled={showPopup}
         />
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleJoinGroup} 
+        <PrimaryButton
+          label="Join Group"
+          onPress={handleJoinGroup}
           disabled={showPopup}
         />
       </Animated.View>
@@ -175,13 +237,13 @@ const styles = StyleSheet.create({
   logo: {
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
-    marginBottom: -height * 0.06, // Negative margin to compensate for the PNG's built-in margin
+    marginBottom: -height * 0.06,
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.2, // Increased spacing between title and buttons
+    marginBottom: height * 0.2,
   },
   buttonContainer: {
     width: '100%',

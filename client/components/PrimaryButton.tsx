@@ -8,14 +8,20 @@ interface PrimaryButtonProps {
   disabled?: boolean;
 }
 
-const PrimaryButton: React.FC<PrimaryButtonProps> = ({ label, onPress, disabled }) => {
+const PrimaryButton: React.FC<PrimaryButtonProps> = ({
+  label,
+  onPress,
+  disabled,
+}) => {
   return (
     <TouchableOpacity
       style={[styles.button, disabled && styles.disabledButton]}
       onPress={disabled ? undefined : onPress}
       disabled={disabled}
     >
-      <Text style={[styles.text, disabled && styles.disabledText]}>{label}</Text>
+      <Text style={[styles.text, disabled && styles.disabledText]}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -40,6 +46,5 @@ const styles = StyleSheet.create({
     color: Colors.light.disabledText,
   },
 });
-
 
 export default PrimaryButton;

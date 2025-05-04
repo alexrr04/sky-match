@@ -1,50 +1,56 @@
-# Welcome to your Expo app 👋
+# SkyMatch Trip Planner
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A group trip planning app that helps friends decide on their next destination through a fun, interactive voting process.
 
-## Get started
+## Setup and Running
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Start the WebSocket Server
 
 ```bash
-npm run reset-project
+cd server
+npm install
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The WebSocket server will start on port 8080 (or the port specified in your .env file).
 
-## Learn more
+### 2. Start the Expo App
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cd app
+npm install
+expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This will start the Expo development server. You can then:
 
-## Join the community
+- Press 'a' to open Android emulator
+- Press 'i' to open iOS simulator
+- Scan the QR code with Expo Go app on your physical device
 
-Join our community of developers creating universal apps.
+## Project Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+/trip-planner
+├── /app            # Expo + React Native + TypeScript + Zustand
+│   ├── /app       # Screens and navigation
+│   ├── /hooks     # Custom React hooks
+│   ├── /state     # Zustand state management
+│   └── /components # Reusable UI components
+└── /server        # Node.js + WebSocket server
+```
+
+## Game Flow
+
+1. Host creates a new lobby and gets a unique code
+2. Friends join using the lobby code
+3. Game progresses through phases:
+   - Personal questions (budget, preferences)
+   - Tinder-style A vs B voting
+   - Final results with trip recommendations
+
+## Development
+
+- WebSocket server: Edit `/server/server.js`
+- Client state: Edit `/app/src/state/stores/lobbyState`
+- Game screens: Edit files in `/app/app/(game)/`
