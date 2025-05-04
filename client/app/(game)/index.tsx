@@ -21,12 +21,77 @@ import Animated, {
   withSequence,
   useSharedValue,
   withDelay,
+  withRepeat,
   Easing,
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+// Background shape components
+const FloatingShape = ({ style, size, color, delay = 0 }: any) => {
+  const translateY = useSharedValue(0);
+  const rotate = useSharedValue(0);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    translateY.value = withRepeat(
+      withSequence(
+        withDelay(
+          delay,
+          withTiming(-50, {
+            duration: 3000,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        withTiming(0, {
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+        })
+      ),
+      -1,
+      true
+    );
+
+    rotate.value = withRepeat(
+      withTiming(360, {
+        duration: 10000,
+        easing: Easing.linear,
+      }),
+      -1
+    );
+
+    scale.value = withRepeat(
+      withSequence(
+        withDelay(
+          delay,
+          withTiming(1.1, {
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        withTiming(1, {
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+        })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` },
+      { scale: scale.value },
+    ],
+  }));
+
+  return <AnimatedView style={[styles.shape, { width: size, height: size, backgroundColor: color }, style, animatedStyle]} />;
+};
 
 interface JoinLobbyResponse {
   success: boolean;
@@ -157,6 +222,33 @@ export default function MainScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.backgroundContainer}>
+        <FloatingShape 
+          size={100} 
+          color={Colors.light.primary + '10'} 
+          style={styles.shape1}
+          delay={0}
+        />
+        <FloatingShape 
+          size={80} 
+          color={Colors.light.accent + '10'} 
+          style={styles.shape2}
+          delay={500}
+        />
+        <FloatingShape 
+          size={120} 
+          color={Colors.light.secondary + '10'} 
+          style={styles.shape3}
+          delay={1000}
+        />
+        <FloatingShape 
+          size={60} 
+          color={Colors.light.primary + '10'} 
+          style={styles.shape4}
+          delay={1500}
+        />
+      </View>
+
       <Animated.View
         style={[
           styles.overlay,
@@ -239,6 +331,34 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
+  backgroundContainer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  shape: {
+    position: 'absolute',
+    borderRadius: 16,
+  },
+  shape1: {
+    top: '15%',
+    left: '10%',
+    transform: [{ rotate: '45deg' }],
+  },
+  shape2: {
+    top: '35%',
+    right: '15%',
+    borderRadius: 40,
+  },
+  shape3: {
+    bottom: '20%',
+    left: '20%',
+    transform: [{ rotate: '-30deg' }],
+  },
+  shape4: {
+    bottom: '35%',
+    right: '25%',
+    borderRadius: 30,
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -255,12 +375,14 @@ const styles = StyleSheet.create({
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
     marginBottom: -height * 0.06,
+    zIndex: 2,
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
     marginBottom: height * 0.2,
+    zIndex: 2,
   },
   buttonContainer: {
     width: '100%',
