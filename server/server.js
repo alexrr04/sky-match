@@ -15,6 +15,9 @@ function generateLobbyCode(length = 6) {
   for (let i = 0; i < length; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  if (code in lobbies) {
+    return generateLobbyCode(length); // Ensure unique lobby code
+  }
   return code;
 }
 
