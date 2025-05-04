@@ -1,4 +1,11 @@
-import { View, StyleSheet, Text, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import React, { useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
 import { useNavigate } from '@/hooks/useNavigate';
@@ -40,15 +47,22 @@ export default function MainScreen() {
         damping: 12,
         stiffness: 100,
       }),
-      withDelay(1000, 
+      withDelay(
+        1000,
         withSequence(
-          withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.05, {
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+          }),
           withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
         )
       )
     );
     titleOpacity.value = withDelay(400, withTiming(1, { duration: 800 }));
-    buttonContainerOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
+    buttonContainerOpacity.value = withDelay(
+      800,
+      withTiming(1, { duration: 800 })
+    );
   }, []);
 
   useEffect(() => {
@@ -73,7 +87,11 @@ export default function MainScreen() {
   const buttonContainerStyle = useAnimatedStyle(() => ({
     opacity: buttonContainerOpacity.value,
     transform: [
-      { translateY: withTiming(buttonContainerOpacity.value * -20, { duration: 800 }) },
+      {
+        translateY: withTiming(buttonContainerOpacity.value * -20, {
+          duration: 800,
+        }),
+      },
     ],
   }));
 
@@ -101,21 +119,20 @@ export default function MainScreen() {
         style={[styles.logo, logoStyle]}
         contentFit="contain"
       />
-      
-      <Animated.Text style={[styles.text, titleStyle]}>
-        SkyMatch
-      </Animated.Text>
+      <Animated.Text style={[styles.text, titleStyle]}>SkyMatch</Animated.Text>
 
-      <Animated.View style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}>
-        <TouchableOpacity 
-          style={styles.closeButton} 
+      <Animated.View
+        style={[styles.popup, popupStyle, showPopup && styles.popupVisible]}
+      >
+        <TouchableOpacity
+          style={styles.closeButton}
           onPress={() => setShowPopup(false)}
         >
           <MaterialIcons name="close" size={24} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.popupTitle}>Join a Group</Text>
-        
+
         <View style={styles.inputContainer}>
           <MaterialIcons name="person" size={24} color={Colors.light.primary} />
           <TextInput
@@ -138,22 +155,28 @@ export default function MainScreen() {
           />
         </View>
 
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleConfirmGroupCode} 
+        <PrimaryButton
+          label="Join Group"
+          onPress={handleConfirmGroupCode}
           disabled={!userName || !groupCode}
         />
       </Animated.View>
 
-      <Animated.View style={[styles.buttonContainer, buttonContainerStyle, showPopup && styles.dimmed]}>
-        <PrimaryButton 
-          label="Create Group" 
-          onPress={handleCreateGroup} 
+      <Animated.View
+        style={[
+          styles.buttonContainer,
+          buttonContainerStyle,
+          showPopup && styles.dimmed,
+        ]}
+      >
+        <PrimaryButton
+          label="Create Group"
+          onPress={handleCreateGroup}
           disabled={showPopup}
         />
-        <PrimaryButton 
-          label="Join Group" 
-          onPress={handleJoinGroup} 
+        <PrimaryButton
+          label="Join Group"
+          onPress={handleJoinGroup}
           disabled={showPopup}
         />
       </Animated.View>
