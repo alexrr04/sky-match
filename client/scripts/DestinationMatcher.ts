@@ -1,6 +1,6 @@
-import { findDestinationsWithinBudget } from './FlightSearcher.js';
+import { findDestinationsWithinBudget } from './FlightSearcher';
 import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
-import { Member, GroupInput, GroupDestination, AirportInfo, AirportAttributes } from '@/constants/types.js';
+import { Member, GroupInput, GroupDestination, AirportInfo, AirportAttributes } from '@/constants/types';
 
 function calculateDestinationScore(destination: AirportAttributes | AirportInfo, members: Member[]): { 
   score: number; 
@@ -260,17 +260,6 @@ async function displayMatchingDestinations(group: GroupInput): Promise<void> {
     });
     console.log('\n-----------------------------------');
   });
-}
-
-async function main() {
-  const { multiOriginGroup, sameOriginGroup } = await import('../constants/friendGroup.js');
-  
-  await displayMatchingDestinations(multiOriginGroup);
-  await displayMatchingDestinations(sameOriginGroup);
-}
-
-if (import.meta.url === new URL(process.argv[1], 'file:').href) {
-  main().catch(console.error);
 }
 
 export { findBestMatchingDestinations, displayMatchingDestinations };

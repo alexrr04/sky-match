@@ -1,4 +1,4 @@
-import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from '@/scripts/config.js';
+import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from '@/scripts/config';
 
 interface FlightOption {
   destination: string;
@@ -182,39 +182,6 @@ async function findDestinationsWithinBudget(
     console.error('Error searching flights:', error);
     return [];
   }
-}
-
-// Example usage
-async function main() {
-  const result = await findDestinationsWithinBudget(
-    'BCN',
-    '2025-07-15',
-    '2025-07-22',
-    500
-  );
-
-  result.forEach((option) => {
-    console.log(`${option.destination}`);
-    console.log(
-      `Outbound: ${option.outboundFlight.airline} - €${
-        option.outboundFlight.price
-      }${option.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'}`
-    );
-    console.log(
-      `Return: ${option.returnFlight.airline} - €${option.returnFlight.price}${
-        option.returnFlight.isDirect ? ' (direct)' : ' (with stops)'
-      }`
-    );
-    console.log(
-      `Total: €${option.outboundFlight.price + option.returnFlight.price}`
-    );
-    console.log('-----------------------------------');
-  });
-}
-
-// Run main function if this is the entry point
-if (process.argv[1] === import.meta.url) {
-  main().catch(console.error);
 }
 
 export { findDestinationsWithinBudget };

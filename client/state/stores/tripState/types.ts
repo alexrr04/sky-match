@@ -28,7 +28,7 @@ export interface QuizAnswer {
   choice: 'left' | 'right';
 }
 
-import { GroupDestination } from '@/scripts/DestinationMatcher';
+import { GroupDestination } from '@/scripts/DestinationMatcher.js';
 
 export interface TripState {
   phase: number;
