@@ -1,4 +1,4 @@
-const { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } = require('./config');
+import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from './config';
 
 interface FlightOption {
   destination: string;
@@ -125,8 +125,9 @@ async function main() {
   });
 }
 
-if (require.main === module) {
+// Run main function if this is the entry point
+if (process.argv[1] === import.meta.url) {
   main().catch(console.error);
 }
 
-module.exports = { findDestinationsWithinBudget };
+export { findDestinationsWithinBudget };
