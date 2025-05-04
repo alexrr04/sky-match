@@ -99,54 +99,46 @@ function calculateDestinationScore(destination: AirportInfo, members: Member[]):
     }
   } = {};
 
-  // Count total preferences across all members
-  let totalPreferences = 0;
-  let totalMatches = 0;
-
-  members.forEach(member => {
-    attributes.forEach(attr => {
-      if (member[attr] === true) {
-        totalPreferences++;
-        if (destination[attr] === true) {
-          totalMatches++;
-        }
-      }
-    });
-  });
+  let totalMatchScore = 0;
+  let totalAttributesConsidered = 0;
 
   // Calculate attribute-specific details for display
   attributes.forEach(attr => {
     const matches: string[] = [];
     const mismatches: string[] = [];
-    let attrMatches = 0;
-    let attrTotal = 0;
+    let interestedMembers = 0;
+    let matchedMembers = 0;
 
     members.forEach(member => {
       const memberWantsIt = member[attr] === true;
       const destinationHasIt = destination[attr] === true;
 
       if (memberWantsIt) {
-        attrTotal++;
+        interestedMembers++;
         if (destinationHasIt) {
           matches.push(member.name);
-          attrMatches++;
+          matchedMembers++;
         } else {
           mismatches.push(member.name);
         }
       }
     });
 
-    if (attrTotal > 0) {
+    if (interestedMembers > 0) {
+      const attrScore = matchedMembers / members.length; // Calculate score based on total members
       details[attr] = {
-        score: attrTotal > 0 ? attrMatches / totalPreferences : 0,
+        score: attrScore,
         matches,
         mismatches
       };
+      // For total score calculation, also use total members
+      totalMatchScore += attrScore;
+      totalAttributesConsidered++;
     }
   });
 
   return {
-    score: totalPreferences > 0 ? totalMatches / totalPreferences : 0,
+    score: totalAttributesConsidered > 0 ? totalMatchScore / totalAttributesConsidered : 0,
     details
   };
 }
@@ -157,58 +149,85 @@ function calculateCostScore(totalCost: number, groupSize: number, maxBudget: num
   return 0.3 * (1 - (avgCost / avgBudget));
 }
 
+// Cache structures
+const airportAttributesCache = new Map<string, AirportInfo>();
+const destinationCache = new Map<string, any[]>();
+
+// Initialize airport cache
+airportsWithAttributes.forEach((airport: AirportInfo) => {
+  airportAttributesCache.set(airport.iata, airport);
+});
+
+// Cache key generator
+const getCacheKey = (origin: string, date: string, budget: number) => 
+  `${origin}-${date}-${budget}`;
+
 async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDestination[]> {
+  console.log('Searching for destinations...');
   try {
-    // Group members by origin airport and find lowest budget for each
-    const originGroups = new Map<string, { members: Member[], lowestBudget: number }>();
-    group.members.forEach(member => {
-      if (!originGroups.has(member.originAirport)) {
-        originGroups.set(member.originAirport, { members: [], lowestBudget: member.budget });
+    // Create origin groups with budget info
+    const originGroups = group.members.reduce((acc, member) => {
+      if (!acc.has(member.originAirport)) {
+        acc.set(member.originAirport, { members: [], lowestBudget: member.budget });
       }
-      const group = originGroups.get(member.originAirport)!;
+      const group = acc.get(member.originAirport)!;
       group.members.push(member);
       group.lowestBudget = Math.min(group.lowestBudget, member.budget);
-    });
+      return acc;
+    }, new Map<string, { members: Member[], lowestBudget: number }>());
 
-    // Search flights only once per origin airport using lowest budget
-    const originDestinationsPromises = Array.from(originGroups.entries()).map(([origin, { lowestBudget }]) =>
-      findDestinationsWithinBudget(
-        origin,
-        group.departureDate,
-        group.returnDate,
-        lowestBudget
-      )
-    );
+    // Parallel search with caching and timeouts
+    const [originDestinations, maxGroupBudget] = await Promise.all([
+      Promise.all(Array.from(originGroups.entries()).map(async ([origin, { lowestBudget }]) => {
+        const cacheKey = getCacheKey(origin, group.departureDate, lowestBudget);
+        
+        if (destinationCache.has(cacheKey)) {
+          return [origin, destinationCache.get(cacheKey)] as [string, any[]];
+        }
 
-    const originDestinations = await Promise.all(originDestinationsPromises);
-    const originDestinationsMap = new Map<string, any[]>();
-    Array.from(originGroups.keys()).forEach((origin, index) => {
-      originDestinationsMap.set(origin, originDestinations[index]);
-    });
+        // Always try to get results, using cached data as fallback
+        try {
+          const destinations = await findDestinationsWithinBudget(
+            origin, 
+            group.departureDate, 
+            group.returnDate, 
+            lowestBudget
+          );
+          destinationCache.set(cacheKey, destinations);
+          return [origin, destinations] as [string, any[]];
+        } catch (error) {
+          console.warn(`Error searching for ${origin}: ${error}, using cached results if available`);
+          // Use cached results or empty array as fallback
+          const cachedResults = destinationCache.get(cacheKey) || [];
+          return [origin, cachedResults] as [string, any[]];
+        }
+      })),
+      Promise.resolve(group.members.reduce((sum, member) => sum + member.budget, 0))
+    ]);
+
+    // Create destination map more efficiently
+    const originDestinationsMap = new Map(originDestinations as [string, any[]][]);
+    // Pre-calculate destination scores
     const destinationsMap = new Map<string, GroupDestination>();
-    const maxGroupBudget = group.members.reduce((sum, member) => sum + member.budget, 0);
 
-    group.members.forEach(member => {
-      const destinations = originDestinationsMap.get(member.originAirport) || [];
+    // Process destinations more efficiently
+    for (const [origin, destinations] of originDestinationsMap) {
+      const originMembers = originGroups.get(origin)!.members;
 
-      destinations.forEach((dest: any) => {
+      for (const dest of destinations) {
         const destinationKey = dest.destination;
-        const totalCost = dest.outboundFlight.price + dest.returnFlight.price;
         const destinationIATA = destinationKey.split(' (')[1].replace(')', '');
+        const airportInfo = airportAttributesCache.get(destinationIATA);
+        
+        if (!airportInfo) continue;
 
-        const airportInfo = airportsWithAttributes.find((a: AirportInfo) => a.iata === destinationIATA);
-        if (!airportInfo) {
-          return;
-        }
+        const totalCost = dest.outboundFlight.price + dest.returnFlight.price;
+        if (totalCost > originGroups.get(origin)!.lowestBudget) continue;
 
-        if (totalCost > member.budget) {
-          return;
-        }
-
-        if (!destinationsMap.has(destinationKey)) {
+        let destinationEntry = destinationsMap.get(destinationKey);
+        if (!destinationEntry) {
           const { score, details } = calculateDestinationScore(airportInfo, group.members);
-
-          destinationsMap.set(destinationKey, {
+          destinationEntry = {
             destination: destinationKey,
             totalGroupCost: 0,
             matchScore: score,
@@ -216,32 +235,34 @@ async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDes
             finalScore: 0,
             memberFlights: {},
             matchDetails: details
-          });
+          };
+          destinationsMap.set(destinationKey, destinationEntry);
         }
 
-        const destinationEntry = destinationsMap.get(destinationKey)!;
-        destinationEntry.memberFlights[member.name] = {
-          origin: member.originAirport,
-          outboundFlight: {
-            airline: dest.outboundFlight.airline,
-            price: dest.outboundFlight.price,
-            isDirect: dest.outboundFlight.isDirect
-          },
-          returnFlight: {
-            airline: dest.returnFlight.airline,
-            price: dest.returnFlight.price,
-            isDirect: dest.returnFlight.isDirect
-          }
-        };
-        destinationEntry.totalGroupCost += dest.outboundFlight.price + dest.returnFlight.price;
-      });
-    });
+        for (const member of originMembers) {
+          destinationEntry.memberFlights[member.name] = {
+            origin,
+            outboundFlight: {
+              airline: dest.outboundFlight.airline,
+              price: dest.outboundFlight.price,
+              isDirect: dest.outboundFlight.isDirect
+            },
+            returnFlight: {
+              airline: dest.returnFlight.airline,
+              price: dest.returnFlight.price,
+              isDirect: dest.returnFlight.isDirect
+            }
+          };
+          destinationEntry.totalGroupCost += totalCost;
+        }
+      }
+    }
 
-    // Calculate final scores for each destination
-    destinationsMap.forEach(dest => {
+    // Calculate scores in a single pass
+    for (const dest of destinationsMap.values()) {
       dest.costScore = calculateCostScore(dest.totalGroupCost, group.members.length, maxGroupBudget);
       dest.finalScore = (dest.matchScore * 0.7) + (dest.costScore * 0.3);
-    });
+    }
 
     return Array.from(destinationsMap.values())
       .filter(dest => Object.keys(dest.memberFlights).length === group.members.length)
