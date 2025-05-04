@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Alert,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useNavigate } from '@/hooks/useNavigate';
@@ -16,7 +17,6 @@ import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { socket } from '@/utils/socket';
 
-// Define a TypeScript interface for a participant
 interface Participant {
   id: string;
   name: string;
@@ -26,7 +26,8 @@ interface Participant {
 interface LobbyData {
   lobbyCode: string;
   members: Participant[];
-  host: string; // This is the socket.id of the host
+  host: string;
+  gameStarted: boolean;
 }
 
 interface LobbyResponse extends LobbyData {
@@ -42,8 +43,19 @@ export default function LobbyScreen() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isHost, setIsHost] = useState(false);
   const [lobbyCode, setLobbyCode] = useState('');
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
+    const handleGameStarted = (data: {
+      success: boolean;
+      timestamp: number;
+    }) => {
+      if (data.success) {
+        console.log('Game is starting!', data);
+        navigateTo('/phase1-quiz');
+      }
+    };
+
     // Listen for lobby data updates
     const handleLobbyData = (data: LobbyData) => {
       console.log('Received lobby data:', data);
@@ -51,17 +63,17 @@ export default function LobbyScreen() {
       setLobbyCode(data.lobbyCode);
       setParticipants(data.members);
 
-      // Simply compare the current socket.id with the host id from the server
       const currentSocket = socket.id;
       setIsHost(data.host === currentSocket);
-      console.log('Host check:', {
-        currentSocket,
-        hostId: data.host,
-        isHost: data.host === currentSocket,
-      });
+
+      // If the game has already started, navigate to the game screen
+      if (data.gameStarted) {
+        navigateTo('/phase1-quiz');
+      }
     };
 
     socket.on('lobbyData', handleLobbyData);
+    socket.on('gameStarted', handleGameStarted);
 
     // Request the lobby data using our socket connection
     console.log('Requesting lobby state with socket:', socket.id);
@@ -73,19 +85,18 @@ export default function LobbyScreen() {
         setLobbyData(response);
         setParticipants(response.members);
 
-        // Same host check for initial state
         const currentSocket = socket.id;
         setIsHost(response.host === currentSocket);
-        console.log('Initial host check:', {
-          currentSocket,
-          hostId: response.host,
-          isHost: response.host === currentSocket,
-        });
+
+        if (response.gameStarted) {
+          navigateTo('/phase1-quiz');
+        }
       }
     });
 
     return () => {
       socket.off('lobbyData', handleLobbyData);
+      socket.off('gameStarted', handleGameStarted);
     };
   }, []);
 
@@ -96,9 +107,19 @@ export default function LobbyScreen() {
   };
 
   const handleStartMatch = () => {
-    if (isHost) {
-      navigateTo('/phase1-quiz');
-    }
+    if (!isHost) return;
+
+    setIsStarting(true);
+    socket.emit(
+      'startGame',
+      (response: { success: boolean; message?: string }) => {
+        setIsStarting(false);
+        if (!response.success) {
+          Alert.alert('Error', response.message || 'Failed to start the game');
+        }
+        // Don't navigate here - wait for the gameStarted event
+      }
+    );
   };
 
   // Show loading state while we wait for lobby data
@@ -122,7 +143,7 @@ export default function LobbyScreen() {
           color={Colors.light.primary}
         />
       </TouchableOpacity>
-      {/* Group Code section */}
+
       <View style={styles.headerSection}>
         <View style={styles.groupCodeContainer}>
           <View style={styles.codeSection}>
@@ -157,7 +178,6 @@ export default function LobbyScreen() {
         </View>
       </View>
 
-      {/* Members List */}
       <ThemedText style={styles.title}>Members</ThemedText>
       <FlatList
         data={participants}
@@ -172,23 +192,26 @@ export default function LobbyScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Footer with Start Button */}
       <View style={styles.footer}>
         <Pressable
           style={[
             styles.actionButtonContainer,
-            !isHost && styles.actionButtonDisabled,
+            (!isHost || isStarting) && styles.actionButtonDisabled,
           ]}
           onPress={handleStartMatch}
-          disabled={!isHost}
+          disabled={!isHost || isStarting}
         >
           <ThemedText
             style={[
               styles.actionButtonText,
-              !isHost && styles.actionButtonTextDisabled,
+              (!isHost || isStarting) && styles.actionButtonTextDisabled,
             ]}
           >
-            {isHost ? 'Start Match' : 'Waiting for Host'}
+            {isStarting
+              ? 'Starting...'
+              : isHost
+              ? 'Start Match'
+              : 'Waiting for Host'}
           </ThemedText>
           {!isHost && (
             <MaterialIcons

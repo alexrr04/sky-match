@@ -14,7 +14,7 @@ export const Colors = {
     placeholder: '#B0BEC5',
     disabled: '#B0BEC5',
     disabledText: '#CFD8DC',
-
+    error: '#FF0048',
     tint: tintColorLight,
     icon: '#687076',
     tabIconDefault: '#687076',

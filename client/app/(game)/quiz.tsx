@@ -1,24 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  Text,
+} from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
-import { router } from 'expo-router';
-import { useTripStore } from '@/state/stores/tripState/tripState';
+import { useNavigate } from '@/hooks/useNavigate';
+// import { useTripStore } from '@/state/stores/tripState/tripState';
 import { ThemedText } from '@/components/ThemedText';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import Animated, { 
-  useAnimatedStyle, 
-  withRepeat, 
-  withSequence, 
+import { socket } from '@/utils/socket';
+import {
+  MaterialCommunityIcons,
+  MaterialIcons,
+  Ionicons,
+} from '@expo/vector-icons';
+import Animated, {
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
   withTiming,
-  useSharedValue
+  useSharedValue,
 } from 'react-native-reanimated';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
+
+interface QuizStatus {
+  completed: string[];
+  total: number;
+  timeStarted: number | null;
+}
+
 export default function QuizScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedMembers, setCompletedMembers] = useState<string[]>([]);
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<number | null>(30); // Initialize with 30
+  const [answers, setAnswers] = useState<string[]>([]);
+
   const currentQuestion = quizQuestions[currentQuestionIndex];
-  const imagesLoaded = useImagePreloader(currentQuestionIndex, quizQuestions.length);
+  const imagesLoaded = useImagePreloader(
+    currentQuestionIndex,
+    quizQuestions.length
+  );
+  const { navigateTo } = useNavigate();
 
   // Animation values
   const marker = useSharedValue(0);
@@ -27,7 +55,80 @@ export default function QuizScreen() {
   const map = useSharedValue(0);
   const earth = useSharedValue(0);
 
-  React.useEffect(() => {
+  // Define animated styles outside conditionals
+  const markerStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${marker.value}deg` }],
+  }));
+
+  const compassStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${compass.value}deg` }],
+  }));
+
+  const airplaneStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${airplane.value}deg` }],
+  }));
+
+  const mapStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${map.value}deg` }],
+  }));
+
+  const earthStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${earth.value}deg` }],
+  }));
+
+  useEffect(() => {
+    // Listen for quiz status updates
+    socket.on('quizStatus', (data: QuizStatus) => {
+      setCompletedMembers(data.completed);
+      setTotalMembers(data.total);
+
+      // Start countdown when first person completes
+      if (data.timeStarted) {
+        const elapsed = Math.floor((Date.now() - data.timeStarted) / 1000);
+        const remaining = Math.max(30 - elapsed, 0);
+        setTimeLeft(remaining);
+      }
+    });
+
+    // Listen for time up event
+    socket.on('quizTimeUp', () => {
+      if (!isSubmitting) {
+        handleQuizComplete(true);
+      }
+    });
+
+    // Listen for navigation event
+    socket.on('navigateToCountdown', () => {
+      navigateTo('/countdown');
+    });
+
+    return () => {
+      socket.off('quizStatus');
+      socket.off('quizTimeUp');
+      socket.off('navigateToCountdown');
+    };
+  }, [isSubmitting]);
+
+  // Handle countdown timer
+  useEffect(() => {
+    if (timeLeft === null) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === null) return null;
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // Animation setup
+  useEffect(() => {
     marker.value = withRepeat(
       withSequence(
         withTiming(-25, { duration: 2000 }),
@@ -36,7 +137,7 @@ export default function QuizScreen() {
       -1,
       true
     );
-    
+
     compass.value = withRepeat(
       withSequence(
         withTiming(25, { duration: 2500 }),
@@ -74,130 +175,120 @@ export default function QuizScreen() {
     );
   }, []);
 
-  const iconAnimations = {
-    marker: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${marker.value}deg` }]
-    })),
-    compass: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${compass.value}deg` }]
-    })),
-    airplane: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${airplane.value}deg` }]
-    })),
-    map: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${map.value}deg` }]
-    })),
-    earth: useAnimatedStyle(() => ({
-      transform: [{ rotate: `${earth.value}deg` }]
-    })),
+  const handleQuizComplete = (isAutoSubmit = false) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    // Emit submission to server
+    socket.emit(
+      'submitQuiz',
+      { answers },
+      (response: { success: boolean; message?: string }) => {
+        if (!response.success) {
+          console.error('Failed to submit quiz:', response.message);
+        }
+      }
+    );
   };
 
-  const { addQuizAnswer, transformAndStorePreferences } = useTripStore();
-
-  const handleSwipe = async (direction: 'left' | 'right') => {
-    const selectedOption = direction === 'left' ? currentQuestion.optionLeft : currentQuestion.optionRight;
-    
-    addQuizAnswer({
-      questionId: currentQuestion.id,
-      choice: direction
-    });
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const selectedOption =
+      direction === 'left'
+        ? currentQuestion.optionLeft
+        : currentQuestion.optionRight;
+    console.log(
+      `Question ${currentQuestion.id}: User chose ${selectedOption.label}`
+    );
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      try {
-        console.log('Processing last answer...');
-        await transformAndStorePreferences();
-        console.log('Preferences transformed, navigating to countdown...');
-        setTimeout(() => {
-          router.push('/countdown' as any);
-        }, 500);
-      } catch (error) {
-        console.error('Error processing quiz completion:', error);
-      }
+      navigateTo('/countdown');
     }
   };
+
+  if (isSubmitting) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={Colors.light.primary} />
+        <ThemedText style={styles.waitingText}>
+          {completedMembers.length} of {totalMembers} members ready
+        </ThemedText>
+        {/* <ThemedText style={styles.timerText}>
+          {Math.floor(timeLeft || 0)}s left
+        </ThemedText> */}
+      </View>
+    );
+  }
 
   if (!imagesLoaded) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={Colors.light.primary} />
-        <ThemedText style={styles.loadingText}>Loading next question...</ThemedText>
+        <ThemedText style={styles.loadingText}>
+          Loading next question...
+        </ThemedText>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      {/* Timer display - Always visible */}
+      <View style={styles.timerContainer}>
+        <MaterialIcons name="timer" size={24} color={Colors.light.primary} />
+        <ThemedText style={styles.timerText}>{timeLeft}s</ThemedText>
+      </View>
+
       <View style={styles.decorativeContainer}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.decorativeIcon,
             { top: height * 0.15, left: width * 0.1 },
-            iconAnimations.marker
+            markerStyle,
           ]}
         >
-          <Ionicons 
-            name="location" 
-            size={90} 
-            color={Colors.light.accent}
-          />
+          <Ionicons name="location" size={90} color={Colors.light.accent} />
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.decorativeIcon,
             { top: height * 0.3, right: width * 0.15 },
-            iconAnimations.compass
+            compassStyle,
           ]}
         >
-          <Ionicons 
-            name="compass" 
-            size={80} 
-            color={Colors.light.primary}
-          />
+          <Ionicons name="compass" size={80} color={Colors.light.primary} />
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.decorativeIcon,
             { bottom: height * 0.12, left: width * 0.15 },
-            iconAnimations.airplane
+            airplaneStyle,
           ]}
         >
-          <Ionicons 
-            name="airplane" 
-            size={80} 
-            color={Colors.light.primary}
-          />
+          <Ionicons name="airplane" size={80} color={Colors.light.primary} />
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.decorativeIcon,
             { bottom: height * 0.2, right: width * 0.1 },
-            iconAnimations.map
+            mapStyle,
           ]}
         >
-          <Ionicons 
-            name="map" 
-            size={75} 
-            color={Colors.light.accent}
-          />
+          <Ionicons name="map" size={75} color={Colors.light.accent} />
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.decorativeIcon,
             { bottom: height * 0.3, left: width * 0.3 },
-            iconAnimations.earth
+            earthStyle,
           ]}
         >
-          <Ionicons 
-            name="earth" 
-            size={70} 
-            color={Colors.light.accent}
-          />
+          <Ionicons name="earth" size={70} color={Colors.light.accent} />
         </Animated.View>
       </View>
 
@@ -206,11 +297,15 @@ export default function QuizScreen() {
           Question {currentQuestionIndex + 1}/{quizQuestions.length}
         </ThemedText>
         <View style={styles.progressBar}>
-          <View 
+          <View
             style={[
-              styles.progressFill, 
-              { width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }
-            ]} 
+              styles.progressFill,
+              {
+                width: `${
+                  ((currentQuestionIndex + 1) / quizQuestions.length) * 100
+                }%`,
+              },
+            ]}
           />
         </View>
       </View>
@@ -220,15 +315,17 @@ export default function QuizScreen() {
           {currentQuestion.question}
         </ThemedText>
         <View style={styles.hintContainer}>
-          <MaterialCommunityIcons 
-            name="gesture-swipe-horizontal" 
-            size={32} 
+          <MaterialCommunityIcons
+            name="gesture-swipe-horizontal"
+            size={32}
             color={Colors.light.primary}
           />
-          <ThemedText style={styles.hintText}>Swipe left or right to choose</ThemedText>
+          <ThemedText style={styles.hintText}>
+            Swipe left or right to choose
+          </ThemedText>
         </View>
       </View>
-      
+
       <SwipeCard
         optionLeft={currentQuestion.optionLeft}
         optionRight={currentQuestion.optionRight}
@@ -241,6 +338,15 @@ export default function QuizScreen() {
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: width * 0.05,
+    backgroundColor: Colors.light.background,
+    position: 'relative',
+    zIndex: 1,
+  },
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -250,6 +356,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.primary,
   },
+  waitingText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: Colors.light.primary,
+    fontWeight: 'bold',
+  },
+  timerContainer: {
+    position: 'absolute',
+    top: height * 0.05,
+    right: width * 0.05,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 10,
+  },
+  timerText: {
+    marginLeft: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.light.primary,
+  },
+  timerUrgent: {
+    backgroundColor: Colors.light.error + '20',
+  },
+  timerTextUrgent: {
+    color: Colors.light.error,
+  },
   decorativeContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: -1,
@@ -258,15 +398,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     opacity: 0.3,
     zIndex: 0,
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: width * 0.05,
-    backgroundColor: Colors.light.background,
-    position: 'relative',
-    zIndex: 1,
   },
   progressContainer: {
     width: '100%',

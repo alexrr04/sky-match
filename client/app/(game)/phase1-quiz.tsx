@@ -1,43 +1,162 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Switch, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Switch,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useNavigate } from '@/hooks/useNavigate';
 import { useTripStore } from '@/state/stores/tripState/tripState';
+import { socket } from '@/utils/socket';
+
+interface Phase1Answer {
+  originAirport: string;
+  budget: number;
+  hasLicense: boolean;
+}
+
+interface Phase1Response {
+  success: boolean;
+  message?: string;
+  completed: number;
+  total: number;
+}
+
+interface Phase1Status {
+  lobbyCode: string;
+  completed: string[];
+  total: number;
+}
+
+interface TimeUpEvent {
+  success: boolean;
+  timestamp: number;
+}
 
 const { width, height } = Dimensions.get('window');
+
+const QUIZ_DURATION = 25; // seconds
 
 export default function Phase1Quiz() {
   const [originAirport, setOriginAirport] = useState('');
   const [budget, setBudget] = useState('');
   const [hasLicense, setHasLicense] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUIZ_DURATION);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedMembers, setCompletedMembers] = useState<string[]>([]);
+  const [totalMembers, setTotalMembers] = useState(0);
 
   const { navigateTo } = useNavigate();
 
   const { setPhase1Data } = useTripStore();
 
-  const handleSubmit = () => {
-    setPhase1Data({
-      originAirport: originAirport.trim().toUpperCase(),
-      budget: Number(budget),
-      hasLicense
+  useEffect(() => {
+    // Set up timer for auto-submit
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          if (!isSubmitting) {
+            handleSubmit(true); // Auto-submit when time is up
+          }
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    // Listen for quiz status updates
+    socket.on('phase1Status', (data: Phase1Status) => {
+      setCompletedMembers(data.completed);
+      setTotalMembers(data.total);
     });
-    navigateTo('/quiz');
+
+    // Listen for time up event
+    socket.on('phase1TimeUp', (data: TimeUpEvent) => {
+      if (!isSubmitting) {
+        handleSubmit(true);
+      }
+    });
+
+    // Listen for navigation event
+    socket.on('navigateToQuiz', () => {
+      navigateTo('/quiz');
+    });
+
+    return () => {
+      clearInterval(timer);
+      socket.off('phase1Status');
+      socket.off('phase1TimeUp');
+      socket.off('navigateToQuiz');
+    };
+  }, [isSubmitting]);
+
+  const handleSubmit = (isAutoSubmit = false) => {
+    if (isSubmitting) return;
+
+    if (!isAutoSubmit && !isFormValid) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Emit submission to server
+    socket.emit(
+      'submitPhase1',
+      {
+        answers: {
+          originAirport: originAirport.trim().toUpperCase(),
+          budget: parseInt(budget) || 0,
+          hasLicense,
+        },
+      },
+      (response: Phase1Response) => {
+        if (!response.success) {
+          Alert.alert('Error', response.message || 'Failed to submit answers');
+          setIsSubmitting(false);
+        }
+      }
+    );
   };
 
   const isFormValid = originAirport.trim() !== '' && budget.trim() !== '';
 
   return (
     <View style={styles.container}>
+      {/* Timer */}
+      <View
+        style={[styles.timerContainer, timeLeft <= 5 && styles.timerUrgent]}
+      >
+        <MaterialIcons
+          name="timer"
+          size={24}
+          color={timeLeft <= 5 ? Colors.light.error : Colors.light.primary}
+        />
+        <Text
+          style={[styles.timerText, timeLeft <= 5 && styles.timerTextUrgent]}
+        >
+          {timeLeft}s
+        </Text>
+      </View>
+
       <View style={styles.centerContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.title}>Travel Preferences</Text>
-          
+
           {/* Origin Airport Input */}
           <View style={styles.formGroup}>
             <View style={styles.inputContainer}>
-              <MaterialIcons name="flight-takeoff" size={24} color={Colors.light.primary} />
+              <MaterialIcons
+                name="flight-takeoff"
+                size={24}
+                color={Colors.light.primary}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Origin Airport (e.g., BCN)"
@@ -46,6 +165,7 @@ export default function Phase1Quiz() {
                 onChangeText={setOriginAirport}
                 autoCapitalize="characters"
                 maxLength={3}
+                editable={!isSubmitting}
               />
             </View>
           </View>
@@ -53,7 +173,11 @@ export default function Phase1Quiz() {
           {/* Budget Input */}
           <View style={styles.formGroup}>
             <View style={styles.inputContainer}>
-              <MaterialIcons name="euro" size={24} color={Colors.light.primary} />
+              <MaterialIcons
+                name="euro"
+                size={24}
+                color={Colors.light.primary}
+              />
               <TextInput
                 style={styles.input}
                 placeholder="Budget in EUR"
@@ -61,6 +185,7 @@ export default function Phase1Quiz() {
                 value={budget}
                 onChangeText={setBudget}
                 keyboardType="numeric"
+                editable={!isSubmitting}
               />
             </View>
           </View>
@@ -70,29 +195,50 @@ export default function Phase1Quiz() {
             <View style={styles.licenseContainer}>
               <View style={styles.licenseContent}>
                 <View style={styles.licenseTextContainer}>
-                  <MaterialIcons name="directions-car" size={24} color={Colors.light.primary} />
-                  <Text style={styles.licenseText}>Do you have a driving license?</Text>
+                  <MaterialIcons
+                    name="directions-car"
+                    size={24}
+                    color={Colors.light.primary}
+                  />
+                  <Text style={styles.licenseText}>
+                    Do you have a driving license?
+                  </Text>
                 </View>
                 <View style={styles.switchContainer}>
                   <Switch
                     value={hasLicense}
                     onValueChange={setHasLicense}
-                    trackColor={{ false: Colors.light.disabled, true: Colors.light.secondary }}
-                    thumbColor={hasLicense ? Colors.light.primary : Colors.light.placeholder}
+                    trackColor={{
+                      false: Colors.light.disabled,
+                      true: Colors.light.secondary,
+                    }}
+                    thumbColor={
+                      hasLicense
+                        ? Colors.light.primary
+                        : Colors.light.placeholder
+                    }
+                    disabled={isSubmitting}
                   />
                 </View>
               </View>
             </View>
           </View>
+
+          {/* Progress indicator */}
+          {isSubmitting && (
+            <Text style={styles.progressText}>
+              {completedMembers.length} of {totalMembers} members ready
+            </Text>
+          )}
         </View>
       </View>
 
       {/* Submit Button */}
       <View style={styles.buttonContainer}>
         <PrimaryButton
-          label="Next"
-          onPress={handleSubmit}
-          disabled={!isFormValid}
+          label={isSubmitting ? 'Waiting for others...' : 'Submit'}
+          onPress={() => handleSubmit()}
+          disabled={!isFormValid || isSubmitting}
         />
       </View>
     </View>
@@ -103,6 +249,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light.background,
+  },
+  timerContainer: {
+    position: 'absolute',
+    top: height * 0.05,
+    right: width * 0.05,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  timerText: {
+    marginLeft: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.light.primary,
+  },
+  timerUrgent: {
+    backgroundColor: Colors.light.error + '20',
+  },
+  timerTextUrgent: {
+    color: Colors.light.error,
   },
   centerContainer: {
     flex: 1,
@@ -175,5 +348,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.08,
     paddingBottom: width * 0.08,
     backgroundColor: Colors.light.background,
-  }
+  },
+  progressText: {
+    textAlign: 'center',
+    marginTop: height * 0.02,
+    fontSize: 14,
+    color: Colors.light.primary,
+  },
 });
