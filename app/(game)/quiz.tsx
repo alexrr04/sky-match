@@ -107,7 +107,7 @@ export default function QuizScreen() {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       await transformAndStorePreferences();
-      router.push('/end-game');
+      router.push('/countdown');
     }
   };
 
