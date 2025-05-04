@@ -1,5 +1,5 @@
-const { findDestinationsWithinBudget } = require('./FlightSearcher');
-const airportsWithAttributes = require('../constants/airports_with_attributes_full.json');
+import { findDestinationsWithinBudget } from './FlightSearcher.js';
+import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
 
 interface Member {
   name: string;
@@ -60,6 +60,8 @@ interface AirportInfo {
   iata: string;
   name: string;
   country: string;
+  latitude: number;
+  longitude: number;
   Relax: boolean;
   Adventure: boolean;
   Cold: boolean;
@@ -71,7 +73,7 @@ interface AirportInfo {
   Nightlife: boolean;
   "Quiet evenings": boolean;
   "Good food": boolean;
-  [key: string]: string | boolean;
+  [key: string]: string | number | boolean;
 }
 
 function calculateDestinationScore(destination: AirportInfo, members: Member[]): { 
@@ -96,43 +98,55 @@ function calculateDestinationScore(destination: AirportInfo, members: Member[]):
       mismatches: string[];
     }
   } = {};
-  let totalScore = 0;
-  let totalWeight = 0;
 
+  // Count total preferences across all members
+  let totalPreferences = 0;
+  let totalMatches = 0;
+
+  members.forEach(member => {
+    attributes.forEach(attr => {
+      if (member[attr] === true) {
+        totalPreferences++;
+        if (destination[attr] === true) {
+          totalMatches++;
+        }
+      }
+    });
+  });
+
+  // Calculate attribute-specific details for display
   attributes.forEach(attr => {
     const matches: string[] = [];
     const mismatches: string[] = [];
-    let attrScore = 0;
-    let attrWeight = 0;
+    let attrMatches = 0;
+    let attrTotal = 0;
 
     members.forEach(member => {
       const memberWantsIt = member[attr] === true;
       const destinationHasIt = destination[attr] === true;
 
       if (memberWantsIt) {
-        attrWeight += 1;
+        attrTotal++;
         if (destinationHasIt) {
           matches.push(member.name);
-          attrScore += 1;
+          attrMatches++;
         } else {
           mismatches.push(member.name);
         }
       }
     });
 
-    if (attrWeight > 0) {
+    if (attrTotal > 0) {
       details[attr] = {
-        score: attrWeight > 0 ? attrScore / attrWeight : 0,
+        score: attrTotal > 0 ? attrMatches / totalPreferences : 0,
         matches,
         mismatches
       };
-      totalScore += attrScore;
-      totalWeight += attrWeight;
     }
   });
 
   return {
-    score: totalWeight > 0 ? totalScore / totalWeight : 0,
+    score: totalPreferences > 0 ? totalMatches / totalPreferences : 0,
     details
   };
 }
@@ -145,25 +159,41 @@ function calculateCostScore(totalCost: number, groupSize: number, maxBudget: num
 
 async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDestination[]> {
   try {
-    const memberDestinationsPromises = group.members.map(member =>
+    // Group members by origin airport and find lowest budget for each
+    const originGroups = new Map<string, { members: Member[], lowestBudget: number }>();
+    group.members.forEach(member => {
+      if (!originGroups.has(member.originAirport)) {
+        originGroups.set(member.originAirport, { members: [], lowestBudget: member.budget });
+      }
+      const group = originGroups.get(member.originAirport)!;
+      group.members.push(member);
+      group.lowestBudget = Math.min(group.lowestBudget, member.budget);
+    });
+
+    // Search flights only once per origin airport using lowest budget
+    const originDestinationsPromises = Array.from(originGroups.entries()).map(([origin, { lowestBudget }]) =>
       findDestinationsWithinBudget(
-        member.originAirport,
+        origin,
         group.departureDate,
         group.returnDate,
-        member.budget
+        lowestBudget
       )
     );
 
-    const memberDestinations = await Promise.all(memberDestinationsPromises);
+    const originDestinations = await Promise.all(originDestinationsPromises);
+    const originDestinationsMap = new Map<string, any[]>();
+    Array.from(originGroups.keys()).forEach((origin, index) => {
+      originDestinationsMap.set(origin, originDestinations[index]);
+    });
     const destinationsMap = new Map<string, GroupDestination>();
     const maxGroupBudget = group.members.reduce((sum, member) => sum + member.budget, 0);
 
-    group.members.forEach((member, memberIndex) => {
-      const destinations = memberDestinations[memberIndex];
+    group.members.forEach(member => {
+      const destinations = originDestinationsMap.get(member.originAirport) || [];
 
       destinations.forEach((dest: any) => {
         const destinationKey = dest.destination;
-        const totalCost = dest.price;
+        const totalCost = dest.outboundFlight.price + dest.returnFlight.price;
         const destinationIATA = destinationKey.split(' (')[1].replace(')', '');
 
         const airportInfo = airportsWithAttributes.find((a: AirportInfo) => a.iata === destinationIATA);
@@ -194,16 +224,16 @@ async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDes
           origin: member.originAirport,
           outboundFlight: {
             airline: dest.outboundFlight.airline,
-            price: dest.price / 2,
+            price: dest.outboundFlight.price,
             isDirect: dest.outboundFlight.isDirect
           },
           returnFlight: {
-            airline: dest.returnFlight?.airline || 'Unknown',
-            price: dest.price / 2,
-            isDirect: dest.returnFlight?.isDirect || false
+            airline: dest.returnFlight.airline,
+            price: dest.returnFlight.price,
+            isDirect: dest.returnFlight.isDirect
           }
         };
-        destinationEntry.totalGroupCost += dest.price;
+        destinationEntry.totalGroupCost += dest.outboundFlight.price + dest.returnFlight.price;
       });
     });
 
@@ -286,14 +316,14 @@ async function displayMatchingDestinations(group: GroupInput): Promise<void> {
 }
 
 async function main() {
-  const { multiOriginGroup, sameOriginGroup } = require('../constants/friendGroup');
+  const { multiOriginGroup, sameOriginGroup } = await import('../constants/friendGroup.js');
   
   await displayMatchingDestinations(multiOriginGroup);
   await displayMatchingDestinations(sameOriginGroup);
 }
 
-if (require.main === module) {
+if (import.meta.url === new URL(process.argv[1], 'file:').href) {
   main().catch(console.error);
 }
 
-module.exports = { findBestMatchingDestinations, displayMatchingDestinations };
+export { findBestMatchingDestinations, displayMatchingDestinations };
