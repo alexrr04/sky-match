@@ -16,7 +16,7 @@ function generateLobbyCode(length = 6) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   if (code in lobbies) {
-    return generateLobbyCode(length); // Ensure unique lobby code
+    return generateLobbyCode(length);
   }
   return code;
 }
@@ -28,14 +28,16 @@ io.on('connection', (socket) => {
     const lobbyCode = generateLobbyCode();
     const { name } = data;
 
-    // Create the lobby with the host as first member
     lobbies[lobbyCode] = {
-      host: socket.id, // Socket ID of the host
+      host: socket.id,
       members: [{ id: socket.id, name, isHost: true }],
       lobbyCode,
+      gameStarted: false,
+      phase1Completed: new Set(), // Track who completed phase 1
+      phase1Timer: null,
+      phase1StartTime: null,
     };
 
-    // Associate this socket with the lobby
     socketToLobby[socket.id] = lobbyCode;
 
     console.log('Lobby created:', lobbies[lobbyCode]);
@@ -43,7 +45,95 @@ io.on('connection', (socket) => {
       success: true,
       lobbyCode,
       members: lobbies[lobbyCode].members,
-      host: socket.id, // Include the host ID in the response
+      host: socket.id,
+    });
+  });
+
+  socket.on('startGame', (callback) => {
+    const lobbyCode = socketToLobby[socket.id];
+    const lobby = lobbies[lobbyCode];
+
+    if (!lobby) {
+      callback({ success: false, message: 'Lobby not found' });
+      return;
+    }
+
+    if (lobby.host !== socket.id) {
+      callback({ success: false, message: 'Only the host can start the game' });
+      return;
+    }
+
+    // Mark the game as started and set up phase 1 timer
+    lobby.gameStarted = true;
+    lobby.phase1StartTime = Date.now();
+    lobby.phase1Timer = setTimeout(() => {
+      // Time's up for phase 1
+      if (lobbies[lobbyCode]) {
+        io.emit('phase1TimeUp', {
+          lobbyCode,
+          success: true,
+        });
+        clearTimeout(lobby.phase1Timer);
+        // Auto-advance after 1 second to ensure everyone gets the timeUp event
+        setTimeout(() => {
+          io.emit('navigateToQuiz', { lobbyCode });
+        }, 1000);
+      }
+    }, 25000); // 25 seconds
+
+    // Notify all members that the game is starting
+    io.emit('gameStarted', {
+      lobbyCode,
+      success: true,
+      timestamp: lobby.phase1StartTime,
+    });
+
+    callback({ success: true });
+  });
+
+  socket.on('submitPhase1', (data, callback) => {
+    const lobbyCode = socketToLobby[socket.id];
+    const lobby = lobbies[lobbyCode];
+
+    if (!lobby) {
+      callback({ success: false, message: 'Lobby not found' });
+      return;
+    }
+
+    // Add this user to completed set
+    lobby.phase1Completed.add(socket.id);
+
+    // Store their answers (if needed)
+    // TODO: Store answers if needed for later use
+
+    // Check if everyone has completed
+    const allCompleted = Array.from(lobby.members).every((member) =>
+      lobby.phase1Completed.has(member.id)
+    );
+
+    // Notify everyone about completion status
+    io.emit('phase1Status', {
+      lobbyCode,
+      completed: Array.from(lobby.phase1Completed),
+      total: lobby.members.length,
+    });
+
+    if (allCompleted) {
+      // Clear the timer since everyone finished early
+      if (lobby.phase1Timer) {
+        clearTimeout(lobby.phase1Timer);
+      }
+
+      // Give a short delay before navigation to ensure status is seen
+      setTimeout(() => {
+        io.emit('navigateToQuiz', { lobbyCode });
+      }, 1000);
+    }
+
+    callback({
+      success: true,
+      completed: lobby.phase1Completed.size,
+      total: lobby.members.length,
     });
   });
 
@@ -60,6 +150,7 @@ io.on('connection', (socket) => {
     if (lobbyCode && lobbies[lobbyCode]) {
       const lobbyState = {
         ...lobbies[lobbyCode],
+        phase1Completed: Array.from(lobbies[lobbyCode].phase1Completed),
         success: true,
       };
       console.log(`Sending lobby state for ${lobbyCode}:`, lobbyState);
@@ -71,49 +162,59 @@ io.on('connection', (socket) => {
 
   socket.on('joinLobby', (data, callback) => {
     const { lobbyCode } = data;
-    if (lobbies[lobbyCode]) {
-      // Add the new member (never as host)
-      lobbies[lobbyCode].members.push({
-        id: socket.id,
-        name: data.name || 'Guest',
-        isHost: false, // New members are never hosts
-      });
+    const lobby = lobbies[lobbyCode];
 
-      // Associate this socket with the lobby
-      socketToLobby[socket.id] = lobbyCode;
-
-      console.log(`Socket ${socket.id} joined lobby ${lobbyCode}`);
-
-      // Send success to the joining client
-      callback({
-        success: true,
-        ...lobbies[lobbyCode], // Include host ID and other lobby data
-      });
-
-      // Notify all members in the lobby about the update
-      io.emit('lobbyData', lobbies[lobbyCode]);
-    } else {
+    if (!lobby) {
       callback({ success: false, message: 'Lobby not found' });
+      return;
     }
+
+    if (lobby.gameStarted) {
+      callback({ success: false, message: 'Game has already started' });
+      return;
+    }
+
+    lobby.members.push({
+      id: socket.id,
+      name: data.name || 'Guest',
+      isHost: false,
+    });
+
+    socketToLobby[socket.id] = lobbyCode;
+
+    console.log(`Socket ${socket.id} joined lobby ${lobbyCode}`);
+
+    callback({
+      success: true,
+      ...lobby,
+      phase1Completed: Array.from(lobby.phase1Completed),
+    });
+
+    io.emit('lobbyData', {
+      ...lobby,
+      phase1Completed: Array.from(lobby.phase1Completed),
+    });
   });
 
   socket.on('disconnect', () => {
     console.log('user disconnected', socket.id);
 
-    // Clean up the socket's lobby association
     const lobbyCode = socketToLobby[socket.id];
     if (lobbyCode && lobbies[lobbyCode]) {
       const isHost = lobbies[lobbyCode].host === socket.id;
 
-      // Remove the member from the lobby
       lobbies[lobbyCode].members = lobbies[lobbyCode].members.filter(
         (member) => member.id !== socket.id
       );
+      lobbies[lobbyCode].phase1Completed.delete(socket.id);
 
-      // If it was the host, delete the lobby
       if (isHost) {
+        // Clear any active timers
+        if (lobbies[lobbyCode].phase1Timer) {
+          clearTimeout(lobbies[lobbyCode].phase1Timer);
+        }
+
         delete lobbies[lobbyCode];
-        // Notify remaining members that the lobby was closed
         io.emit('lobbyData', {
           success: false,
           message: 'Lobby closed: Host disconnected',
@@ -121,12 +222,13 @@ io.on('connection', (socket) => {
         });
         console.log(`Lobby ${lobbyCode} deleted because host disconnected`);
       } else if (lobbies[lobbyCode].members.length > 0) {
-        // Only notify if the lobby still exists
-        io.emit('lobbyData', lobbies[lobbyCode]);
+        io.emit('lobbyData', {
+          ...lobbies[lobbyCode],
+          phase1Completed: Array.from(lobbies[lobbyCode].phase1Completed),
+        });
       }
     }
 
-    // Clean up the socket's lobby association
     delete socketToLobby[socket.id];
   });
 });
