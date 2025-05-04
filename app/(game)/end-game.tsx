@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigate } from '@/hooks/useNavigate';
+import { router } from 'expo-router';
 import { useTripStore } from '@/state/stores/tripState/tripState';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -21,7 +21,6 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 const { width, height } = Dimensions.get('window');
 
 export default function EndGameScreen() {
-  const { navigateTo } = useNavigate();
   const backgroundColor = useThemeColor({}, 'background');
   const confettiRef = useRef<ConfettiCannon>(null);
 
@@ -46,9 +45,9 @@ export default function EndGameScreen() {
     transform: [{ scale: scale.value }]
   }));
 
-  const { getSelectedDestination } = useTripStore();
+  const { getSelectedDestination, getDestinationImage } = useTripStore();
   const handleReturnHome = () => {
-    navigateTo('/');
+    router.replace('/');
   };
 
   const destination = getSelectedDestination();
@@ -102,7 +101,14 @@ export default function EndGameScreen() {
 
           {/* Destination Card */}
           <View style={styles.destinationCard}>
-          <View style={styles.destinationInfo}>
+            {getDestinationImage() && (
+              <Image
+                source={{ uri: getDestinationImage()! }}
+                style={styles.destinationImage}
+                resizeMode="cover"
+              />
+            )}
+            <View style={styles.destinationInfo}>
             <ThemedText style={styles.cityName}>
               {destinationName}
             </ThemedText>

@@ -37,6 +37,7 @@ export interface TripState {
   quizAnswers: QuizAnswer[];
   memberPreferences: MemberPreferences | null;
   selectedDestination: GroupDestination | null;
+  destinationImage: string | null;
   setPhase: (phase: number) => void;
   setProgress: (progress: number) => void;
   setPhase1Data: (data: Phase1Data) => void;
@@ -44,4 +45,6 @@ export interface TripState {
   transformAndStorePreferences: () => Promise<void>;
   getMemberPreferences: () => MemberPreferences | null;
   getSelectedDestination: () => GroupDestination | null;
+  setDestinationImage: (url: string) => void;
+  getDestinationImage: () => string | null;
 }

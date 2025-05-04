@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Phase1Data, QuizAnswer, MemberPreferences, TripState } from './types';
 import { useLobbyStore } from '../lobbyState/lobbyStore';
 import { findBestMatchingDestinations } from '@/scripts/DestinationMatcher';
+import { searchCityPhotos } from '@/services/PexelsService';
 
 export const useTripStore = create<TripState>((set, get) => ({
   phase: 0,
@@ -21,6 +22,7 @@ export const useTripStore = create<TripState>((set, get) => ({
   },
 
   selectedDestination: null,
+  destinationImage: null,
 
   transformAndStorePreferences: async () => {
     const { phase1Data, quizAnswers } = get();
@@ -63,9 +65,18 @@ export const useTripStore = create<TripState>((set, get) => ({
       const winner = destinations[0];
       console.log('Winner destination:', winner);
       set({ selectedDestination: winner });
+      
+      // Fetch destination image
+      const cityName = winner.destination.split(' (')[0];
+      const imageUrl = await searchCityPhotos(cityName);
+      if (imageUrl) {
+        set({ destinationImage: imageUrl });
+      }
     }
   },
 
   getMemberPreferences: () => get().memberPreferences,
-  getSelectedDestination: () => get().selectedDestination
+  getSelectedDestination: () => get().selectedDestination,
+  setDestinationImage: (url: string) => set({ destinationImage: url }),
+  getDestinationImage: () => get().destinationImage
 }));
