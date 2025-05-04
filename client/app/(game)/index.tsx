@@ -21,12 +21,77 @@ import Animated, {
   withSequence,
   useSharedValue,
   withDelay,
+  withRepeat,
   Easing,
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+// Background shape components
+const FloatingShape = ({ style, size, color, delay = 0 }: any) => {
+  const translateY = useSharedValue(0);
+  const rotate = useSharedValue(0);
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    translateY.value = withRepeat(
+      withSequence(
+        withDelay(
+          delay,
+          withTiming(-50, {
+            duration: 3000,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        withTiming(0, {
+          duration: 3000,
+          easing: Easing.inOut(Easing.ease),
+        })
+      ),
+      -1,
+      true
+    );
+
+    rotate.value = withRepeat(
+      withTiming(360, {
+        duration: 10000,
+        easing: Easing.linear,
+      }),
+      -1
+    );
+
+    scale.value = withRepeat(
+      withSequence(
+        withDelay(
+          delay,
+          withTiming(1.1, {
+            duration: 2000,
+            easing: Easing.inOut(Easing.ease),
+          })
+        ),
+        withTiming(1, {
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+        })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` },
+      { scale: scale.value },
+    ],
+  }));
+
+  return <AnimatedView style={[styles.shape, { width: size, height: size, backgroundColor: color }, style, animatedStyle]} />;
+};
 
 interface JoinLobbyResponse {
   success: boolean;
@@ -42,6 +107,7 @@ export default function MainScreen() {
   const [isJoining, setIsJoining] = React.useState(false);
 
   // Animation values
+  const darkBgOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
   const titleOpacity = useSharedValue(0);
   const buttonContainerOpacity = useSharedValue(0);
@@ -76,8 +142,10 @@ export default function MainScreen() {
   useEffect(() => {
     if (showPopup) {
       popupScale.value = withSpring(1);
+      darkBgOpacity.value = withTiming(1, { duration: 300 });
     } else {
       popupScale.value = withTiming(0);
+      darkBgOpacity.value = withTiming(0, { duration: 300 });
       // Clear form when closing popup
       setGroupCode('');
       setUserName('');
@@ -112,11 +180,16 @@ export default function MainScreen() {
     opacity: popupScale.value,
   }));
 
+  const darkBgStyle = useAnimatedStyle(() => ({
+    opacity: darkBgOpacity.value,
+  }));
+
   const handleCreateGroup = () => {
     navigateTo('/create-group');
   };
 
   const handleJoinGroup = () => {
+    darkBgOpacity.value = withTiming(1, { duration: 300 });
     setShowPopup(true);
   };
 
@@ -149,6 +222,40 @@ export default function MainScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.backgroundContainer}>
+        <FloatingShape 
+          size={100} 
+          color={Colors.light.primary + '10'} 
+          style={styles.shape1}
+          delay={0}
+        />
+        <FloatingShape 
+          size={80} 
+          color={Colors.light.accent + '10'} 
+          style={styles.shape2}
+          delay={500}
+        />
+        <FloatingShape 
+          size={120} 
+          color={Colors.light.secondary + '10'} 
+          style={styles.shape3}
+          delay={1000}
+        />
+        <FloatingShape 
+          size={60} 
+          color={Colors.light.primary + '10'} 
+          style={styles.shape4}
+          delay={1500}
+        />
+      </View>
+
+      <Animated.View
+        style={[
+          styles.overlay,
+          darkBgStyle,
+        ]}
+      />
+      
       <AnimatedImage
         source={require('@/assets/images/logo-no-bg.png')}
         style={[styles.logo, logoStyle]}
@@ -198,6 +305,7 @@ export default function MainScreen() {
           label={isJoining ? 'Joining...' : 'Join Group'}
           onPress={handleConfirmGroupCode}
           disabled={!userName || !groupCode || isJoining}
+          compact
         />
       </Animated.View>
 
@@ -205,7 +313,6 @@ export default function MainScreen() {
         style={[
           styles.buttonContainer,
           buttonContainerStyle,
-          showPopup && styles.dimmed,
         ]}
       >
         <PrimaryButton
@@ -224,6 +331,39 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
+  backgroundContainer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  shape: {
+    position: 'absolute',
+    borderRadius: 16,
+  },
+  shape1: {
+    top: '15%',
+    left: '10%',
+    transform: [{ rotate: '45deg' }],
+  },
+  shape2: {
+    top: '35%',
+    right: '15%',
+    borderRadius: 40,
+  },
+  shape3: {
+    bottom: '20%',
+    left: '20%',
+    transform: [{ rotate: '-30deg' }],
+  },
+  shape4: {
+    bottom: '35%',
+    right: '25%',
+    borderRadius: 30,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    zIndex: 2,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -231,19 +371,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: width * 0.05,
   },
-  dimmed: {
-    opacity: 0.05,
-  },
   logo: {
     width: Math.min(width * 0.8, 300),
     height: Math.min(width * 0.8, 300),
     marginBottom: -height * 0.06,
+    zIndex: 2,
   },
   text: {
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
     marginBottom: height * 0.2,
+    zIndex: 2,
   },
   buttonContainer: {
     width: '100%',
@@ -254,58 +393,71 @@ const styles = StyleSheet.create({
   },
   popup: {
     position: 'absolute',
-    width: '85%',
+    width: Math.min(width * 0.85, 360),
     backgroundColor: '#fff',
-    padding: width * 0.06,
-    borderRadius: 20,
+    padding: Math.min(width * 0.05, 25),
+    paddingTop: Math.min(width * 0.06, 30),
+    borderRadius: 24,
     alignItems: 'center',
-    elevation: 5,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     zIndex: 3,
+    backdropFilter: 'blur(10px)',
+    transform: [{ scale: 1 }],
   },
   popupVisible: {
     display: 'flex',
   },
   popupTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: Math.min(width * 0.07, 28),
+    fontWeight: '800',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.03,
+    marginBottom: height * 0.035,
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     backgroundColor: Colors.light.background,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: height * 0.02,
-    padding: width * 0.04,
-    borderWidth: 1,
+    padding: Math.min(width * 0.035, 16),
+    borderWidth: 2,
     borderColor: Colors.light.secondary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   input: {
     flex: 1,
-    marginLeft: width * 0.03,
-    fontSize: 16,
+    marginLeft: width * 0.025,
+    fontSize: Math.min(width * 0.04, 16),
     color: Colors.light.primaryText,
+    fontWeight: '500',
+    height: 40,
   },
   closeButton: {
     position: 'absolute',
-    top: -width * 0.03,
-    right: -width * 0.03,
-    width: width * 0.1,
-    height: width * 0.1,
-    borderRadius: width * 0.05,
+    top: -Math.min(width * 0.035, 15),
+    right: -Math.min(width * 0.035, 15),
+    width: Math.min(width * 0.11, 44),
+    height: Math.min(width * 0.11, 44),
+    borderRadius: Math.min(width * 0.055, 22),
     backgroundColor: Colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    transform: [{ scale: 1 }],
   },
 });
