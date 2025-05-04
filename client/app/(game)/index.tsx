@@ -42,6 +42,7 @@ export default function MainScreen() {
   const [isJoining, setIsJoining] = React.useState(false);
 
   // Animation values
+  const darkBgOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
   const titleOpacity = useSharedValue(0);
   const buttonContainerOpacity = useSharedValue(0);
@@ -76,8 +77,10 @@ export default function MainScreen() {
   useEffect(() => {
     if (showPopup) {
       popupScale.value = withSpring(1);
+      darkBgOpacity.value = withTiming(1, { duration: 300 });
     } else {
       popupScale.value = withTiming(0);
+      darkBgOpacity.value = withTiming(0, { duration: 300 });
       // Clear form when closing popup
       setGroupCode('');
       setUserName('');
@@ -112,11 +115,16 @@ export default function MainScreen() {
     opacity: popupScale.value,
   }));
 
+  const darkBgStyle = useAnimatedStyle(() => ({
+    opacity: darkBgOpacity.value,
+  }));
+
   const handleCreateGroup = () => {
     navigateTo('/create-group');
   };
 
   const handleJoinGroup = () => {
+    darkBgOpacity.value = withTiming(1, { duration: 300 });
     setShowPopup(true);
   };
 
@@ -149,6 +157,13 @@ export default function MainScreen() {
 
   return (
     <View style={styles.container}>
+      <Animated.View
+        style={[
+          styles.overlay,
+          darkBgStyle,
+        ]}
+      />
+      
       <AnimatedImage
         source={require('@/assets/images/logo-no-bg.png')}
         style={[styles.logo, logoStyle]}
@@ -198,6 +213,7 @@ export default function MainScreen() {
           label={isJoining ? 'Joining...' : 'Join Group'}
           onPress={handleConfirmGroupCode}
           disabled={!userName || !groupCode || isJoining}
+          compact
         />
       </Animated.View>
 
@@ -205,7 +221,6 @@ export default function MainScreen() {
         style={[
           styles.buttonContainer,
           buttonContainerStyle,
-          showPopup && styles.dimmed,
         ]}
       >
         <PrimaryButton
@@ -224,15 +239,17 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    zIndex: 2,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     backgroundColor: Colors.light.background,
     alignItems: 'center',
     padding: width * 0.05,
-  },
-  dimmed: {
-    opacity: 0.05,
   },
   logo: {
     width: Math.min(width * 0.8, 300),
@@ -254,58 +271,71 @@ const styles = StyleSheet.create({
   },
   popup: {
     position: 'absolute',
-    width: '85%',
+    width: Math.min(width * 0.85, 360),
     backgroundColor: '#fff',
-    padding: width * 0.06,
-    borderRadius: 20,
+    padding: Math.min(width * 0.05, 25),
+    paddingTop: Math.min(width * 0.06, 30),
+    borderRadius: 24,
     alignItems: 'center',
-    elevation: 5,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
     zIndex: 3,
+    backdropFilter: 'blur(10px)',
+    transform: [{ scale: 1 }],
   },
   popupVisible: {
     display: 'flex',
   },
   popupTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: Math.min(width * 0.07, 28),
+    fontWeight: '800',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.03,
+    marginBottom: height * 0.035,
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     backgroundColor: Colors.light.background,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: height * 0.02,
-    padding: width * 0.04,
-    borderWidth: 1,
+    padding: Math.min(width * 0.035, 16),
+    borderWidth: 2,
     borderColor: Colors.light.secondary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   input: {
     flex: 1,
-    marginLeft: width * 0.03,
-    fontSize: 16,
+    marginLeft: width * 0.025,
+    fontSize: Math.min(width * 0.04, 16),
     color: Colors.light.primaryText,
+    fontWeight: '500',
+    height: 40,
   },
   closeButton: {
     position: 'absolute',
-    top: -width * 0.03,
-    right: -width * 0.03,
-    width: width * 0.1,
-    height: width * 0.1,
-    borderRadius: width * 0.05,
+    top: -Math.min(width * 0.035, 15),
+    right: -Math.min(width * 0.035, 15),
+    width: Math.min(width * 0.11, 44),
+    height: Math.min(width * 0.11, 44),
+    borderRadius: Math.min(width * 0.055, 22),
     backgroundColor: Colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    transform: [{ scale: 1 }],
   },
 });

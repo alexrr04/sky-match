@@ -47,7 +47,7 @@ export default function EndGameScreen() {
 
   const { getSelectedDestination, getDestinationImage } = useTripStore();
   const handleReturnHome = () => {
-    router.replace('/');
+    router.replace('/(game)' as any);
   };
 
   const destination = getSelectedDestination();
@@ -55,14 +55,27 @@ export default function EndGameScreen() {
   if (!destination) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
-        <View style={styles.contentContainer}>
-          <ThemedText style={styles.congratsText}>
-            No destination found 😢
-          </ThemedText>
-          <PrimaryButton
-            onPress={handleReturnHome}
-            label="Return Home"
-          />
+        <View style={[styles.contentContainer, styles.noDestinationContainer]}>
+          <View style={styles.noDestinationContent}>
+            <MaterialIcons 
+              name="search-off" 
+              size={80} 
+              color={Colors.light.primary} 
+              style={styles.noDestinationIcon}
+            />
+            <ThemedText style={[styles.congratsText, styles.noDestinationText]}>
+              No Perfect Match Found
+            </ThemedText>
+            <ThemedText style={styles.noDestinationSubtext}>
+              We couldn&apos;t find a destination that matches all your group&apos;s preferences. Try adjusting your criteria and try again.
+            </ThemedText>
+          </View>
+          <View style={styles.bottomButton}>
+            <PrimaryButton
+              onPress={handleReturnHome}
+              label="Return Home"
+            />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -192,6 +205,35 @@ export default function EndGameScreen() {
 }
 
 const styles = StyleSheet.create({
+  noDestinationContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  noDestinationContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: width * 0.1,
+  },
+  noDestinationIcon: {
+    marginBottom: height * 0.03,
+    opacity: 0.9,
+  },
+  noDestinationText: {
+    color: Colors.light.primary,
+    marginBottom: height * 0.02,
+  },
+  noDestinationSubtext: {
+    fontSize: 16,
+    color: Colors.light.secondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  bottomButton: {
+    width: '100%',
+    paddingHorizontal: width * 0.1,
+    marginBottom: height * 0.05,
+  },
   container: {
     flex: 1,
   },
