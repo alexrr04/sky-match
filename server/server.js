@@ -15,6 +15,9 @@ function generateLobbyCode(length = 6) {
   for (let i = 0; i < length; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
+  if (code in lobbies) {
+    return generateLobbyCode(length); // Ensure unique lobby code
+  }
   return code;
 }
 
@@ -27,7 +30,7 @@ io.on('connection', (socket) => {
 
     // Create the lobby with the host as first member
     lobbies[lobbyCode] = {
-      host: socket.id,
+      host: socket.id, // Socket ID of the host
       members: [{ id: socket.id, name, isHost: true }],
       lobbyCode,
     };
@@ -35,11 +38,12 @@ io.on('connection', (socket) => {
     // Associate this socket with the lobby
     socketToLobby[socket.id] = lobbyCode;
 
-    console.log('Lobby created:', lobbyCode);
+    console.log('Lobby created:', lobbies[lobbyCode]);
     callback({
       success: true,
       lobbyCode,
       members: lobbies[lobbyCode].members,
+      host: socket.id, // Include the host ID in the response
     });
   });
 
@@ -54,8 +58,12 @@ io.on('connection', (socket) => {
   socket.on('getLobbyState', (callback) => {
     const lobbyCode = socketToLobby[socket.id];
     if (lobbyCode && lobbies[lobbyCode]) {
-      console.log(`Sending lobby state for ${lobbyCode}:`, lobbies[lobbyCode]);
-      callback(lobbies[lobbyCode]);
+      const lobbyState = {
+        ...lobbies[lobbyCode],
+        success: true,
+      };
+      console.log(`Sending lobby state for ${lobbyCode}:`, lobbyState);
+      callback(lobbyState);
     } else {
       callback({ success: false, message: 'Lobby not found' });
     }
@@ -64,17 +72,23 @@ io.on('connection', (socket) => {
   socket.on('joinLobby', (data, callback) => {
     const { lobbyCode } = data;
     if (lobbies[lobbyCode]) {
+      // Add the new member (never as host)
       lobbies[lobbyCode].members.push({
         id: socket.id,
         name: data.name || 'Guest',
-        isHost: false,
+        isHost: false, // New members are never hosts
       });
 
       // Associate this socket with the lobby
       socketToLobby[socket.id] = lobbyCode;
 
       console.log(`Socket ${socket.id} joined lobby ${lobbyCode}`);
-      callback({ success: true, lobbyCode });
+
+      // Send success to the joining client
+      callback({
+        success: true,
+        ...lobbies[lobbyCode], // Include host ID and other lobby data
+      });
 
       // Notify all members in the lobby about the update
       io.emit('lobbyData', lobbies[lobbyCode]);
@@ -89,17 +103,25 @@ io.on('connection', (socket) => {
     // Clean up the socket's lobby association
     const lobbyCode = socketToLobby[socket.id];
     if (lobbyCode && lobbies[lobbyCode]) {
+      const isHost = lobbies[lobbyCode].host === socket.id;
+
       // Remove the member from the lobby
       lobbies[lobbyCode].members = lobbies[lobbyCode].members.filter(
         (member) => member.id !== socket.id
       );
 
       // If it was the host, delete the lobby
-      if (lobbies[lobbyCode].host === socket.id) {
+      if (isHost) {
         delete lobbies[lobbyCode];
+        // Notify remaining members that the lobby was closed
+        io.emit('lobbyData', {
+          success: false,
+          message: 'Lobby closed: Host disconnected',
+          lobbyCode,
+        });
         console.log(`Lobby ${lobbyCode} deleted because host disconnected`);
-      } else {
-        // Notify remaining members about the update
+      } else if (lobbies[lobbyCode].members.length > 0) {
+        // Only notify if the lobby still exists
         io.emit('lobbyData', lobbies[lobbyCode]);
       }
     }

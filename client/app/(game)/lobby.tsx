@@ -26,6 +26,12 @@ interface Participant {
 interface LobbyData {
   lobbyCode: string;
   members: Participant[];
+  host: string; // This is the socket.id of the host
+}
+
+interface LobbyResponse extends LobbyData {
+  success: boolean;
+  message?: string;
 }
 
 const { width, height } = Dimensions.get('window');
@@ -44,20 +50,37 @@ export default function LobbyScreen() {
       setLobbyData(data);
       setLobbyCode(data.lobbyCode);
       setParticipants(data.members);
-      setIsHost(data.members.some((member) => member.isHost));
+
+      // Simply compare the current socket.id with the host id from the server
+      const currentSocket = socket.id;
+      setIsHost(data.host === currentSocket);
+      console.log('Host check:', {
+        currentSocket,
+        hostId: data.host,
+        isHost: data.host === currentSocket,
+      });
     };
 
     socket.on('lobbyData', handleLobbyData);
 
     // Request the lobby data using our socket connection
-    // The server knows our socket.id and associated lobby
     console.log('Requesting lobby state with socket:', socket.id);
-    socket.emit('getLobbyState', (response: any) => {
+    socket.emit('getLobbyState', (response: LobbyResponse) => {
       console.log('Got lobby state response:', response);
       if (response.success === false) {
         console.error('Failed to get lobby state:', response.message);
       } else {
         setLobbyData(response);
+        setParticipants(response.members);
+
+        // Same host check for initial state
+        const currentSocket = socket.id;
+        setIsHost(response.host === currentSocket);
+        console.log('Initial host check:', {
+          currentSocket,
+          hostId: response.host,
+          isHost: response.host === currentSocket,
+        });
       }
     });
 
@@ -73,7 +96,9 @@ export default function LobbyScreen() {
   };
 
   const handleStartMatch = () => {
-    navigateTo('/phase1-quiz');
+    if (isHost) {
+      navigateTo('/phase1-quiz');
+    }
   };
 
   // Show loading state while we wait for lobby data
@@ -135,10 +160,13 @@ export default function LobbyScreen() {
       {/* Members List */}
       <ThemedText style={styles.title}>Members</ThemedText>
       <FlatList
-        data={lobbyData.members}
+        data={participants}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <GroupMemberCard name={item.name} isHost={item.isHost} />
+          <GroupMemberCard
+            name={item.name}
+            isHost={item.id === lobbyData.host}
+          />
         )}
         contentContainerStyle={styles.memberList}
         showsVerticalScrollIndicator={false}
@@ -146,9 +174,36 @@ export default function LobbyScreen() {
 
       {/* Footer with Start Button */}
       <View style={styles.footer}>
-        <ThemedText style={styles.actionButton} onPress={handleStartMatch}>
-          Start Match
-        </ThemedText>
+        <Pressable
+          style={[
+            styles.actionButtonContainer,
+            !isHost && styles.actionButtonDisabled,
+          ]}
+          onPress={handleStartMatch}
+          disabled={!isHost}
+        >
+          <ThemedText
+            style={[
+              styles.actionButtonText,
+              !isHost && styles.actionButtonTextDisabled,
+            ]}
+          >
+            {isHost ? 'Start Match' : 'Waiting for Host'}
+          </ThemedText>
+          {!isHost && (
+            <MaterialIcons
+              name="lock"
+              size={20}
+              color={Colors.light.disabled}
+              style={styles.lockIcon}
+            />
+          )}
+        </Pressable>
+        {!isHost && (
+          <ThemedText style={styles.helperText}>
+            Only the host can start the match
+          </ThemedText>
+        )}
       </View>
     </View>
   );
@@ -157,7 +212,7 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: height * 0.1, // Increased padding for more space
+    paddingTop: height * 0.1,
     paddingHorizontal: 20,
     backgroundColor: Colors.light.background,
     position: 'relative',
@@ -180,7 +235,7 @@ const styles = StyleSheet.create({
   headerSection: {
     marginBottom: 30,
     paddingHorizontal: 20,
-    marginTop: 0, // Added top margin
+    marginTop: 0,
   },
   groupCodeContainer: {
     backgroundColor: Colors.light.background,
@@ -238,7 +293,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#1E40AF', // Dark blue
+    color: '#1E40AF',
     letterSpacing: 1.5,
     paddingVertical: 8,
   },
@@ -263,20 +318,42 @@ const styles = StyleSheet.create({
     borderTopColor: '#E2E8F0',
     alignItems: 'center',
   },
-  actionButton: {
-    fontSize: 20,
+  actionButtonContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.light.primary,
+    borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    backgroundColor: Colors.light.primary,
-    color: '#FFFFFF',
-    borderRadius: 12,
-    width: '100%',
-    textAlign: 'center',
-    fontWeight: 'bold',
     shadowColor: '#1E40AF',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  actionButtonDisabled: {
+    backgroundColor: Colors.light.secondary + '40',
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  actionButtonText: {
+    fontSize: 20,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  actionButtonTextDisabled: {
+    color: Colors.light.disabled,
+  },
+  lockIcon: {
+    marginLeft: 8,
+  },
+  helperText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: Colors.light.disabled,
+    textAlign: 'center',
   },
 });
