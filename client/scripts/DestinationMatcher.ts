@@ -1,83 +1,8 @@
 import { findDestinationsWithinBudget } from './FlightSearcher.js';
 import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
-import { Member, GroupInput, GroupDestination, AirportInfo } from './types';
+import { Member, GroupInput, GroupDestination, AirportInfo, AirportAttributes } from '@/constants/types.js';
 
-interface Member {
-  name: string;
-  originAirport: string;
-  budget: number;
-  Relax: boolean;
-  Adventure: boolean;
-  Cold: boolean;
-  Hot: boolean;
-  Beach: boolean;
-  Mountain: boolean;
-  "Modern City": boolean;
-  Historic: boolean;
-  Nightlife: boolean;
-  "Quiet evenings": boolean;
-  "Good food": boolean;
-  [key: string]: string | number | boolean;
-}
-
-interface GroupInput {
-  code: string;
-  departureDate: string;
-  returnDate: string;
-  members: Member[];
-}
-
-interface GroupDestination {
-  destination: string;
-  totalGroupCost: number;
-  matchScore: number;
-  costScore: number;
-  finalScore: number;
-  memberFlights: {
-    [memberName: string]: {
-      origin: string;
-      outboundFlight: {
-        airline: string;
-        price: number;
-        isDirect: boolean;
-      };
-      returnFlight: {
-        airline: string;
-        price: number;
-        isDirect: boolean;
-      };
-    };
-  };
-  matchDetails: {
-    [attribute: string]: {
-      score: number;
-      matches: string[];
-      mismatches: string[];
-    };
-  };
-}
-
-interface AirportInfo {
-  iata: string;
-  name: string;
-  country: string;
-  latitude: number;
-  longitude: number;
-  Relax: boolean;
-  Adventure: boolean;
-  Cold: boolean;
-  Hot: boolean;
-  Beach: boolean;
-  Mountain: boolean;
-  "Modern City": boolean;
-  Historic: boolean;
-  Nightlife: boolean;
-  "Quiet evenings": boolean;
-  "Good food": boolean;
-  [key: string]: string | number | boolean;
-}
-
-function calculateDestinationScore(destination: AirportInfo, members: Member[]): { 
+function calculateDestinationScore(destination: AirportAttributes | AirportInfo, members: Member[]): { 
   score: number; 
   details: { 
     [key: string]: {
@@ -90,7 +15,7 @@ function calculateDestinationScore(destination: AirportInfo, members: Member[]):
   const attributes = [
     'Relax', 'Adventure', 'Cold', 'Hot', 'Beach', 'Mountain',
     'Modern City', 'Historic', 'Nightlife', 'Quiet evenings', 'Good food'
-  ];
+  ] as const;
   
   const details: { 
     [key: string]: {
@@ -151,11 +76,11 @@ function calculateCostScore(totalCost: number, groupSize: number, maxBudget: num
 }
 
 // Cache structures
-const airportAttributesCache = new Map<string, AirportInfo>();
+const airportAttributesCache = new Map<string, AirportAttributes>();
 const destinationCache = new Map<string, any[]>();
 
 // Initialize airport cache
-airportsWithAttributes.forEach((airport: AirportInfo) => {
+airportsWithAttributes.forEach((airport: AirportAttributes) => {
   airportAttributesCache.set(airport.iata, airport);
 });
 
@@ -295,7 +220,7 @@ async function displayMatchingDestinations(group: GroupInput): Promise<void> {
 
   destinations.forEach((dest, index) => {
     const iata = dest.destination.split(' (')[1].replace(')', '');
-    const airportInfo = airportsWithAttributes.find((a: AirportInfo) => a.iata === iata);
+    const airportInfo = airportsWithAttributes.find((a: AirportAttributes) => a.iata === iata);
     if (!airportInfo) return;
 
     console.log(`${index + 1}. ${dest.destination} (${airportInfo.country})`);

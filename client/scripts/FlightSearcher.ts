@@ -1,4 +1,4 @@
-import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from './config.js';
+import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from '@/scripts/config.js';
 
 interface FlightOption {
   destination: string;
