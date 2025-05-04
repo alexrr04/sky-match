@@ -26,7 +26,7 @@ export default function CountdownScreen() {
           clearInterval(interval);
           // Navigate to end-game after the last animation
           setTimeout(() => {
-            router.push('/end-game');
+            router.replace('/end-game' as any);
           }, 1000);
           return 0;
         }
@@ -65,7 +65,7 @@ export default function CountdownScreen() {
           Get Ready!
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Your perfect destination awaits...
+          Get ready to see your perfect trip...
         </ThemedText>
         
         <View style={styles.countdownContainer}>

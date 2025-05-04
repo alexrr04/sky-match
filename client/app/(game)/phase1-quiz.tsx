@@ -12,6 +12,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useNavigate } from '@/hooks/useNavigate';
+import { useTripStore } from '@/state/stores/tripState/tripState';
 import { socket } from '@/utils/socket';
 
 interface Phase1Answer {
@@ -52,6 +53,8 @@ export default function Phase1Quiz() {
   const [totalMembers, setTotalMembers] = useState(0);
 
   const { navigateTo } = useNavigate();
+
+  const { setPhase1Data } = useTripStore();
 
   useEffect(() => {
     // Set up timer for auto-submit
@@ -234,7 +237,7 @@ export default function Phase1Quiz() {
       <View style={styles.buttonContainer}>
         <PrimaryButton
           label={isSubmitting ? 'Waiting for others...' : 'Submit'}
-          onPress={() => handleSubmit(false)}
+          onPress={() => handleSubmit()}
           disabled={!isFormValid || isSubmitting}
         />
       </View>

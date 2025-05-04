@@ -1,0 +1,101 @@
+IATA,en-GB,latitude,longitude
+LHR,London Heathrow Airport,51.4706,-0.4619
+CDG,Paris Charles de Gaulle Airport,49.0097,2.5479
+FRA,Frankfurt am Main Airport,50.0379,8.5622
+AMS,Amsterdam Schiphol Airport,52.3105,4.7683
+MAD,Madrid Barajas Airport,40.4936,-3.5668
+BCN,Barcelona El Prat Airport,41.2974,2.0833
+MXP,Milan Malpensa Airport,45.6306,8.7281
+IST,Istanbul Airport,41.2753,28.7519
+SVO,Sheremetyevo International Airport,55.9726,37.4146
+CPH,Copenhagen Airport,55.6181,12.6561
+VIE,Vienna International Airport,48.1103,16.5697
+DUB,Dublin Airport,53.4213,-6.2701
+BRU,Brussels Airport,50.9014,4.4844
+ZRH,Zurich Airport,47.4647,8.5492
+ARN,Stockholm Arlanda Airport,59.6519,17.9186
+OSL,Oslo Gardermoen Airport,60.1939,11.1004
+HEL,Helsinki Airport,60.3172,24.9633
+PRG,Prague Václav Havel Airport,50.1008,14.26
+WAW,Warsaw Chopin Airport,52.1657,20.9671
+ATH,Athens International Airport,37.9364,23.9475
+LIS,Lisbon Humberto Delgado Airport,38.7742,-9.1342
+KRK,Kraków John Paul II Airport,50.0777,19.7848
+BUD,Budapest Ferenc Liszt Airport,47.4399,19.2616
+RIX,Riga International Airport,56.9236,23.9711
+LED,Pulkovo Airport,59.8003,30.2625
+SOF,Sofia Airport,42.6967,23.4114
+BEG,Belgrade Nikola Tesla Airport,44.8184,20.3094
+OTP,Bucharest Henri Coandă Airport,44.5711,26.085
+SKG,Thessaloniki Airport,40.5197,22.9709
+TSF,Treviso Airport,45.6484,12.1944
+CIA,Rome Ciampino Airport,41.7994,12.5949
+FCO,Rome Fiumicino Airport,41.8003,12.2389
+NCE,Nice Côte d'Azur Airport,43.6584,7.2159
+LYS,Lyon-Saint Exupéry Airport,45.7256,5.0811
+GVA,Geneva Airport,46.2381,6.109
+BTS,Bratislava Airport,48.1702,17.2127
+TLL,Tallinn Airport,59.4133,24.8328
+VNO,Vilnius Airport,54.6341,25.2858
+RHO,Rhodes International Airport,36.4054,28.0862
+HER,Heraklion Airport,35.3397,25.1803
+KIV,Chișinău International Airport,46.9277,28.9309
+MLA,Malta International Airport,35.8575,14.4775
+IBZ,Ibiza Airport,38.8729,1.3731
+PMI,Palma de Mallorca Airport,39.5517,2.7388
+SVQ,Seville Airport,37.418,-5.8931
+AGP,Málaga Airport,36.6749,-4.4991
+ALC,Alicante Airport,38.2822,-0.5581
+VLC,Valencia Airport,39.4893,-0.4816
+BLQ,Bologna Airport,44.5354,11.2887
+TRN,Turin Airport,45.2008,7.6496
+NAP,Naples Airport,40.886,14.2908
+CTA,Catania Airport,37.4668,15.0664
+PSA,Pisa Airport,43.6839,10.3927
+AMS_ALT,Amsterdam Schiphol Airport (Alt),52.320499999999996,4.7783
+MAD_ALT,Madrid Barajas Airport (Alt),40.5036,-3.5568000000000004
+BCN_ALT,Barcelona El Prat Airport (Alt),41.3074,2.0932999999999997
+MXP_ALT,Milan Malpensa Airport (Alt),45.6406,8.7381
+IST_ALT,Istanbul Airport (Alt),41.2853,28.7619
+SVO_ALT,Sheremetyevo International Airport (Alt),55.9826,37.4246
+CPH_ALT,Copenhagen Airport (Alt),55.628099999999996,12.6661
+VIE_ALT,Vienna International Airport (Alt),48.1203,16.579700000000003
+DUB_ALT,Dublin Airport (Alt),53.4313,-6.2601
+BRU_ALT,Brussels Airport (Alt),50.9114,4.4944
+ZRH_ALT,Zurich Airport (Alt),47.4747,8.5592
+ARN_ALT,Stockholm Arlanda Airport (Alt),59.661899999999996,17.928600000000003
+OSL_ALT,Oslo Gardermoen Airport (Alt),60.2039,11.1104
+HEL_ALT,Helsinki Airport (Alt),60.3272,24.973300000000002
+PRG_ALT,Prague Václav Havel Airport (Alt),50.1108,14.27
+WAW_ALT,Warsaw Chopin Airport (Alt),52.1757,20.9771
+ATH_ALT,Athens International Airport (Alt),37.9464,23.957500000000003
+LIS_ALT,Lisbon Humberto Delgado Airport (Alt),38.7842,-9.1242
+KRK_ALT,Kraków John Paul II Airport (Alt),50.0877,19.794800000000002
+BUD_ALT,Budapest Ferenc Liszt Airport (Alt),47.4499,19.271600000000003
+RIX_ALT,Riga International Airport (Alt),56.9336,23.9811
+LED_ALT,Pulkovo Airport (Alt),59.8103,30.2725
+SOF_ALT,Sofia Airport (Alt),42.7067,23.421400000000002
+BEG_ALT,Belgrade Nikola Tesla Airport (Alt),44.828399999999995,20.3194
+OTP_ALT,Bucharest Henri Coandă Airport (Alt),44.5811,26.095000000000002
+SKG_ALT,Thessaloniki Airport (Alt),40.5297,22.980900000000002
+TSF_ALT,Treviso Airport (Alt),45.6584,12.2044
+CIA_ALT,Rome Ciampino Airport (Alt),41.8094,12.6049
+FCO_ALT,Rome Fiumicino Airport (Alt),41.8103,12.248899999999999
+NCE_ALT,Nice Côte d'Azur Airport (Alt),43.6684,7.2259
+LYS_ALT,Lyon-Saint Exupéry Airport (Alt),45.7356,5.0911
+GVA_ALT,Geneva Airport (Alt),46.2481,6.119
+BTS_ALT,Bratislava Airport (Alt),48.1802,17.222700000000003
+TLL_ALT,Tallinn Airport (Alt),59.4233,24.8428
+VNO_ALT,Vilnius Airport (Alt),54.644099999999995,25.2958
+RHO_ALT,Rhodes International Airport (Alt),36.4154,28.096200000000003
+HER_ALT,Heraklion Airport (Alt),35.3497,25.1903
+KIV_ALT,Chișinău International Airport (Alt),46.9377,28.940900000000003
+MLA_ALT,Malta International Airport (Alt),35.8675,14.487499999999999
+IBZ_ALT,Ibiza Airport (Alt),38.8829,1.3831
+PMI_ALT,Palma de Mallorca Airport (Alt),39.561699999999995,2.7487999999999997
+SVQ_ALT,Seville Airport (Alt),37.428,-5.8831
+AGP_ALT,Málaga Airport (Alt),36.6849,-4.4891000000000005
+ALC_ALT,Alicante Airport (Alt),38.2922,-0.5481
+VLC_ALT,Valencia Airport (Alt),39.4993,-0.47159999999999996
+BLQ_ALT,Bologna Airport (Alt),44.5454,11.2987
+TRN_ALT,Turin Airport (Alt),45.2108,7.6596

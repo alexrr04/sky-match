@@ -10,6 +10,7 @@ import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
 import { useNavigate } from '@/hooks/useNavigate';
+// import { useTripStore } from '@/state/stores/tripState/tripState';
 import { ThemedText } from '@/components/ThemedText';
 import { socket } from '@/utils/socket';
 import {
@@ -195,13 +196,14 @@ export default function QuizScreen() {
       direction === 'left'
         ? currentQuestion.optionLeft
         : currentQuestion.optionRight;
-    const newAnswers = [...answers, selectedOption.label];
-    setAnswers(newAnswers);
+    console.log(
+      `Question ${currentQuestion.id}: User chose ${selectedOption.label}`
+    );
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      handleQuizComplete(false);
+      navigateTo('/countdown');
     }
   };
 
