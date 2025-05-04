@@ -99,7 +99,7 @@ export default function QuizScreen() {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      router.push('/in-game');
+      router.push('/countdown');
     }
   };
 
