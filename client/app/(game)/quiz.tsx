@@ -12,7 +12,11 @@ import { quizQuestions } from '@/constants/QuizQuestions';
 import { useNavigate } from '@/hooks/useNavigate';
 import { ThemedText } from '@/components/ThemedText';
 import { socket } from '@/utils/socket';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import {
+  MaterialCommunityIcons,
+  MaterialIcons,
+  Ionicons,
+} from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   withRepeat,
@@ -33,7 +37,7 @@ export default function QuizScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedMembers, setCompletedMembers] = useState<string[]>([]);
   const [totalMembers, setTotalMembers] = useState(0);
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(30); // Initialize with 30
   const [answers, setAnswers] = useState<string[]>([]);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
@@ -78,8 +82,8 @@ export default function QuizScreen() {
       setTotalMembers(data.total);
 
       // Start countdown when first person completes
-      if (data.timeStarted && !timeLeft) {
-        const elapsed = (Date.now() - data.timeStarted) / 1000;
+      if (data.timeStarted) {
+        const elapsed = Math.floor((Date.now() - data.timeStarted) / 1000);
         const remaining = Math.max(30 - elapsed, 0);
         setTimeLeft(remaining);
       }
@@ -208,13 +212,9 @@ export default function QuizScreen() {
         <ThemedText style={styles.waitingText}>
           {completedMembers.length} of {totalMembers} members ready
         </ThemedText>
-        {timeLeft !== null && (
-          <ThemedText
-            style={[styles.timerText, timeLeft <= 5 && styles.timerUrgent]}
-          >
-            Waiting {timeLeft}s for others...
-          </ThemedText>
-        )}
+        {/* <ThemedText style={styles.timerText}>
+          {Math.floor(timeLeft || 0)}s left
+        </ThemedText> */}
       </View>
     );
   }
@@ -232,6 +232,12 @@ export default function QuizScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Timer display - Always visible */}
+      <View style={styles.timerContainer}>
+        <MaterialIcons name="timer" size={24} color={Colors.light.primary} />
+        <ThemedText style={styles.timerText}>{timeLeft}s</ThemedText>
+      </View>
+
       <View style={styles.decorativeContainer}>
         <Animated.View
           style={[
@@ -354,14 +360,33 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
     fontWeight: 'bold',
   },
+  timerContainer: {
+    position: 'absolute',
+    top: height * 0.05,
+    right: width * 0.05,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 10,
+  },
   timerText: {
-    marginTop: 8,
-    fontSize: 16,
+    marginLeft: 8,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: Colors.light.primary,
   },
   timerUrgent: {
+    backgroundColor: Colors.light.error + '20',
+  },
+  timerTextUrgent: {
     color: Colors.light.error,
-    fontWeight: 'bold',
   },
   decorativeContainer: {
     ...StyleSheet.absoluteFillObject,
