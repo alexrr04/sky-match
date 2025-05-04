@@ -26,10 +26,14 @@ export const useTripStore = create<TripState>((set, get) => ({
 
   transformAndStorePreferences: async () => {
     const { phase1Data, quizAnswers } = get();
-    if (!phase1Data || quizAnswers.length < 6) return;
+    if (!phase1Data || quizAnswers.length < 6) {
+      console.error('Missing required data:', { phase1Data, answersCount: quizAnswers.length });
+      throw new Error('Missing required data for preferences transformation');
+    }
 
+    const lobbyStore = useLobbyStore.getState();
     const preferences: MemberPreferences = {
-      name: useLobbyStore.getState().getHostName(),
+      name: lobbyStore.players.find(p => p.isHost)?.name || 'Host',
       originAirport: phase1Data.originAirport,
       budget: phase1Data.budget,
       Relax: quizAnswers[2].choice === 'right',
@@ -51,7 +55,7 @@ export const useTripStore = create<TripState>((set, get) => ({
     // Find matching destinations
     console.log('Finding matching destinations...');
     const group = {
-      code: useLobbyStore.getState().getLobbyId(),
+      code: lobbyStore.lobbyCode || 'default',
       departureDate: "2025-07-15", // Hardcoded for now
       returnDate: "2025-07-22",    // Hardcoded for now
       members: [preferences]

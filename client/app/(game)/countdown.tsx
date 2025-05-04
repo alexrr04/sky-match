@@ -26,7 +26,7 @@ export default function CountdownScreen() {
           clearInterval(interval);
           // Navigate to end-game after the last animation
           setTimeout(() => {
-            router.replace('/end-game');
+            router.replace('/end-game' as any);
           }, 1000);
           return 0;
         }

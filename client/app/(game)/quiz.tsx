@@ -15,7 +15,6 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
-
 export default function QuizScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = quizQuestions[currentQuestionIndex];
@@ -106,8 +105,16 @@ export default function QuizScreen() {
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      await transformAndStorePreferences();
-      router.push('/countdown');
+      try {
+        console.log('Processing last answer...');
+        await transformAndStorePreferences();
+        console.log('Preferences transformed, navigating to countdown...');
+        setTimeout(() => {
+          router.push('/countdown' as any);
+        }, 500);
+      } catch (error) {
+        console.error('Error processing quiz completion:', error);
+      }
     }
   };
 
