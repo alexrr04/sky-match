@@ -33,9 +33,12 @@ io.on('connection', (socket) => {
       members: [{ id: socket.id, name, isHost: true }],
       lobbyCode,
       gameStarted: false,
-      phase1Completed: new Set(), // Track who completed phase 1
+      phase1Completed: new Set(),
+      quizCompleted: new Set(),
       phase1Timer: null,
+      quizTimer: null,
       phase1StartTime: null,
+      quizStartTime: null,
     };
 
     socketToLobby[socket.id] = lobbyCode;
@@ -67,21 +70,18 @@ io.on('connection', (socket) => {
     lobby.gameStarted = true;
     lobby.phase1StartTime = Date.now();
     lobby.phase1Timer = setTimeout(() => {
-      // Time's up for phase 1
       if (lobbies[lobbyCode]) {
         io.emit('phase1TimeUp', {
           lobbyCode,
           success: true,
         });
         clearTimeout(lobby.phase1Timer);
-        // Auto-advance after 1 second to ensure everyone gets the timeUp event
         setTimeout(() => {
           io.emit('navigateToQuiz', { lobbyCode });
         }, 1000);
       }
-    }, 25000); // 25 seconds
+    }, 25000);
 
-    // Notify all members that the game is starting
     io.emit('gameStarted', {
       lobbyCode,
       success: true,
@@ -89,6 +89,68 @@ io.on('connection', (socket) => {
     });
 
     callback({ success: true });
+  });
+
+  socket.on('submitQuiz', (data, callback) => {
+    const lobbyCode = socketToLobby[socket.id];
+    const lobby = lobbies[lobbyCode];
+
+    if (!lobby) {
+      callback({ success: false, message: 'Lobby not found' });
+      return;
+    }
+
+    // Add this user to completed set
+    lobby.quizCompleted.add(socket.id);
+
+    // If this is the first person to complete, start the 30-second timer
+    if (lobby.quizCompleted.size === 1) {
+      lobby.quizStartTime = Date.now();
+      lobby.quizTimer = setTimeout(() => {
+        if (lobbies[lobbyCode]) {
+          io.emit('quizTimeUp', {
+            lobbyCode,
+            success: true,
+          });
+          clearTimeout(lobby.quizTimer);
+          // Navigate everyone to countdown after 1 second
+          setTimeout(() => {
+            io.emit('navigateToCountdown', { lobbyCode });
+          }, 1000);
+        }
+      }, 30000); // 30 seconds
+    }
+
+    // Check if everyone has completed
+    const allCompleted = Array.from(lobby.members).every((member) =>
+      lobby.quizCompleted.has(member.id)
+    );
+
+    // Notify everyone about completion status
+    io.emit('quizStatus', {
+      lobbyCode,
+      completed: Array.from(lobby.quizCompleted),
+      total: lobby.members.length,
+      timeStarted: lobby.quizStartTime,
+    });
+
+    if (allCompleted) {
+      // Clear the timer since everyone finished early
+      if (lobby.quizTimer) {
+        clearTimeout(lobby.quizTimer);
+      }
+
+      // Give a short delay before navigation
+      setTimeout(() => {
+        io.emit('navigateToCountdown', { lobbyCode });
+      }, 1000);
+    }
+
+    callback({
+      success: true,
+      completed: lobby.quizCompleted.size,
+      total: lobby.members.length,
+    });
   });
 
   socket.on('submitPhase1', (data, callback) => {
@@ -100,18 +162,12 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Add this user to completed set
     lobby.phase1Completed.add(socket.id);
 
-    // Store their answers (if needed)
-    // TODO: Store answers if needed for later use
-
-    // Check if everyone has completed
     const allCompleted = Array.from(lobby.members).every((member) =>
       lobby.phase1Completed.has(member.id)
     );
 
-    // Notify everyone about completion status
     io.emit('phase1Status', {
       lobbyCode,
       completed: Array.from(lobby.phase1Completed),
@@ -119,12 +175,10 @@ io.on('connection', (socket) => {
     });
 
     if (allCompleted) {
-      // Clear the timer since everyone finished early
       if (lobby.phase1Timer) {
         clearTimeout(lobby.phase1Timer);
       }
 
-      // Give a short delay before navigation to ensure status is seen
       setTimeout(() => {
         io.emit('navigateToQuiz', { lobbyCode });
       }, 1000);
@@ -151,6 +205,7 @@ io.on('connection', (socket) => {
       const lobbyState = {
         ...lobbies[lobbyCode],
         phase1Completed: Array.from(lobbies[lobbyCode].phase1Completed),
+        quizCompleted: Array.from(lobbies[lobbyCode].quizCompleted),
         success: true,
       };
       console.log(`Sending lobby state for ${lobbyCode}:`, lobbyState);
@@ -188,11 +243,13 @@ io.on('connection', (socket) => {
       success: true,
       ...lobby,
       phase1Completed: Array.from(lobby.phase1Completed),
+      quizCompleted: Array.from(lobby.quizCompleted),
     });
 
     io.emit('lobbyData', {
       ...lobby,
       phase1Completed: Array.from(lobby.phase1Completed),
+      quizCompleted: Array.from(lobby.quizCompleted),
     });
   });
 
@@ -207,11 +264,15 @@ io.on('connection', (socket) => {
         (member) => member.id !== socket.id
       );
       lobbies[lobbyCode].phase1Completed.delete(socket.id);
+      lobbies[lobbyCode].quizCompleted.delete(socket.id);
 
       if (isHost) {
         // Clear any active timers
         if (lobbies[lobbyCode].phase1Timer) {
           clearTimeout(lobbies[lobbyCode].phase1Timer);
+        }
+        if (lobbies[lobbyCode].quizTimer) {
+          clearTimeout(lobbies[lobbyCode].quizTimer);
         }
 
         delete lobbies[lobbyCode];
@@ -225,6 +286,7 @@ io.on('connection', (socket) => {
         io.emit('lobbyData', {
           ...lobbies[lobbyCode],
           phase1Completed: Array.from(lobbies[lobbyCode].phase1Completed),
+          quizCompleted: Array.from(lobbies[lobbyCode].quizCompleted),
         });
       }
     }
