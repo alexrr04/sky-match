@@ -1,12 +1,15 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const { findDestinationsWithinBudget } = require('./flightSearcher');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const lobbies = {};
+const searchResults = new Map(); // Store flight search results temporarily
 const socketToLobby = {}; // Keep track of which socket is in which lobby
 
 function generateLobbyCode(length = 6) {
@@ -286,6 +289,46 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('searchFlights', async (data) => {
+    const { origin, departureDate, returnDate, maxBudget } = data;
+    const lobbyCode = socketToLobby[socket.id];
+    const lobby = lobbies[lobbyCode];
+
+    if (!lobby || lobby.host !== socket.id) {
+      return;
+    }
+
+    try {
+      console.log(`Searching flights from ${origin} for lobby ${lobbyCode}`);
+      const results = await findDestinationsWithinBudget(
+        origin,
+        departureDate,
+        returnDate,
+        maxBudget
+      );
+
+      // Store results for this origin
+      if (!searchResults.has(lobbyCode)) {
+        searchResults.set(lobbyCode, new Map());
+      }
+      searchResults.get(lobbyCode).set(origin, results);
+
+      // Send results to host
+      io.to(`${lobbyCode}-host`).emit('flightSearchResults', {
+        success: true,
+        data: results,
+        origin,
+      });
+    } catch (error) {
+      console.error('Error searching flights:', error);
+      io.to(`${lobbyCode}-host`).emit('flightSearchResults', {
+        success: false,
+        error: error.message,
+        origin,
+      });
+    }
+  });
+
   socket.on('computedDestination', (data) => {
     console.log('computedDestination', JSON.stringify(data));
     const lobbyCode = socketToLobby[socket.id];
@@ -294,6 +337,9 @@ io.on('connection', (socket) => {
     if (!lobby || lobby.host !== socket.id) {
       return;
     }
+
+    // Clear stored search results for this lobby
+    searchResults.delete(lobbyCode);
 
     // Broadcast the computed destination to all members in the lobby
     console.log(`Broadcasting computed destination to lobby ${lobbyCode}:`);
@@ -338,6 +384,8 @@ io.on('connection', (socket) => {
           clearTimeout(lobbies[lobbyCode].quizTimer);
         }
 
+        // Clean up stored search results
+        searchResults.delete(lobbyCode);
         delete lobbies[lobbyCode];
         io.emit('lobbyData', {
           success: false,
