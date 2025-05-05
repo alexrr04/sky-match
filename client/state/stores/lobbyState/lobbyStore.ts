@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface Player {
+export interface Player {
   playerId: string;
   name: string;
   isHost: boolean;
@@ -11,6 +11,7 @@ type Phase =
   | 'personal'
   | 'preference'
   | 'results_processing'
+  | 'countdown'
   | 'done';
 
 interface Question {
@@ -37,6 +38,7 @@ interface LobbyState {
       }
     >;
   };
+  selectedDestination: string | null;
   // Actions
   setLobbyCode: (code: string | null) => void;
   setPlayerId: (id: string | null) => void;
@@ -51,9 +53,11 @@ interface LobbyState {
   setSend: (send: (msg: any) => void) => void;
   reset: () => void;
   setMembersAnswers: (answers: LobbyState['membersAnswers']) => void;
+  getMembersAnswers: () => LobbyState['membersAnswers'];
+  setSelectedDestination: (destination: string | null) => void;
 }
 
-const initialState = {
+export const useLobbyStore = create<LobbyState>()((set, get) => ({
   lobbyCode: null,
   playerId: null,
   players: [],
@@ -61,10 +65,8 @@ const initialState = {
   currentQuestion: null,
   hasAnswered: false,
   send: () => {},
-};
-
-export const useLobbyStore = create<LobbyState>()((set) => ({
-  ...initialState,
+  membersAnswers: undefined,
+  selectedDestination: null,
 
   setLobbyCode: (code) => set({ lobbyCode: code }),
   setPlayerId: (id) => set({ playerId: id }),
@@ -90,6 +92,9 @@ export const useLobbyStore = create<LobbyState>()((set) => ({
     })),
   setHasAnswered: (answered) => set({ hasAnswered: answered }),
   setSend: (send) => set({ send }),
-  reset: () => set(initialState),
+  reset: () => set({}),
   setMembersAnswers: (answers) => set({ membersAnswers: answers }),
+  getMembersAnswers: () => get().membersAnswers,
+  setSelectedDestination: (destination) =>
+    set({ selectedDestination: destination }),
 }));

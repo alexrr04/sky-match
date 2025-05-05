@@ -3,6 +3,7 @@ import { Phase1Data, QuizAnswer, MemberPreferences, TripState } from './types';
 import { useLobbyStore } from '../lobbyState/lobbyStore';
 import { findBestMatchingDestinations } from '@/scripts/destinationMatcher';
 import { searchCityPhotos } from '@/services/PexelsService';
+import { GroupInput, GroupDestination } from '@/constants/types';
 
 export const useTripStore = create<TripState>((set, get) => ({
   phase: 0,
@@ -10,6 +11,8 @@ export const useTripStore = create<TripState>((set, get) => ({
   phase1Data: null,
   quizAnswers: [],
   memberPreferences: null,
+  selectedDestination: null as GroupDestination | null,
+  destinationImage: null,
 
   setPhase: (phase: number) => set({ phase }),
   setProgress: (progress: number) => set({ progress }),
@@ -20,9 +23,6 @@ export const useTripStore = create<TripState>((set, get) => ({
     const currentAnswers = get().quizAnswers;
     set({ quizAnswers: [...currentAnswers, answer] });
   },
-
-  selectedDestination: null,
-  destinationImage: null,
 
   transformAndStorePreferences: async () => {
     const { phase1Data, quizAnswers } = get();
@@ -71,7 +71,7 @@ export const useTripStore = create<TripState>((set, get) => ({
     if (destinations.length > 0) {
       const winner = destinations[0];
       console.log('Winner destination:', winner);
-      set({ selectedDestination: winner });
+      set({ selectedDestination: winner as GroupDestination });
 
       // Fetch destination image
       const cityName = winner.destination.split(' (')[0];
@@ -83,6 +83,17 @@ export const useTripStore = create<TripState>((set, get) => ({
   },
 
   getMemberPreferences: () => get().memberPreferences,
+  setSelectedDestination: (destination: GroupDestination | null) => {
+    set({ selectedDestination: destination });
+    if (destination) {
+      const cityName = destination.destination.split(' (')[0];
+      searchCityPhotos(cityName).then((url) => {
+        if (url) {
+          set({ destinationImage: url });
+        }
+      });
+    }
+  },
   getSelectedDestination: () => get().selectedDestination,
   setDestinationImage: (url: string) => set({ destinationImage: url }),
   getDestinationImage: () => get().destinationImage,

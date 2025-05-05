@@ -286,6 +286,21 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('computedDestination', (data) => {
+    const lobbyCode = socketToLobby[socket.id];
+    const lobby = lobbies[lobbyCode];
+
+    if (!lobby || lobby.host !== socket.id) {
+      return;
+    }
+
+    // Broadcast the computed destination to all members in the lobby
+    io.emit('destinationComputed', {
+      success: true,
+      data: data,
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('user disconnected', socket.id);
 
