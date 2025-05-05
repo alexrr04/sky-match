@@ -1,4 +1,4 @@
-import { findDestinationsWithinBudget } from './FlightSearcher';
+import { findDestinationsWithinBudget } from './flightSearcher';
 import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
 import { Member, GroupInput, GroupDestination, AirportInfo, AirportAttributes } from '@/constants/types';
 

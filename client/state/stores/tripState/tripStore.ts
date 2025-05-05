@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Phase1Data, QuizAnswer, MemberPreferences, TripState } from './types';
 import { useLobbyStore } from '../lobbyState/lobbyStore';
-import { findBestMatchingDestinations } from '@/scripts/DestinationMatcher';
+import { findBestMatchingDestinations } from '@/scripts/destinationMatcher';
 import { searchCityPhotos } from '@/services/PexelsService';
 
 export const useTripStore = create<TripState>((set, get) => ({

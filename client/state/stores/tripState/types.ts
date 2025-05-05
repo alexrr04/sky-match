@@ -1,4 +1,3 @@
-
 export interface MemberPreferences {
   [key: string]: string | number | boolean;
   name: string;
@@ -10,11 +9,11 @@ export interface MemberPreferences {
   Hot: boolean;
   Beach: boolean;
   Mountain: boolean;
-  "Modern City": boolean;
+  'Modern City': boolean;
   Historic: boolean;
   Nightlife: boolean;
-  "Quiet evenings": boolean;
-  "Good food": boolean;
+  'Quiet evenings': boolean;
+  'Good food': boolean;
 }
 
 export interface Phase1Data {
@@ -28,7 +27,7 @@ export interface QuizAnswer {
   choice: 'left' | 'right';
 }
 
-import { GroupDestination } from '@/scripts/DestinationMatcher.js';
+import { GroupDestination } from '@/scripts/destinationMatcher.js';
 
 export interface TripState {
   phase: number;
