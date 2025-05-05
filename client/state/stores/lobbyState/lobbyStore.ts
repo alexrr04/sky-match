@@ -26,6 +26,17 @@ interface LobbyState {
   currentQuestion: Question | null;
   hasAnswered: boolean;
   send: (msg: any) => void;
+  membersAnswers?: {
+    quizAnswers: Record<string, string[]>;
+    phase1Answers: Record<
+      string,
+      {
+        originAirport: string;
+        budget: number;
+        hasLicense: boolean;
+      }
+    >;
+  };
   // Actions
   setLobbyCode: (code: string | null) => void;
   setPlayerId: (id: string | null) => void;
@@ -39,6 +50,7 @@ interface LobbyState {
   setHasAnswered: (answered: boolean) => void;
   setSend: (send: (msg: any) => void) => void;
   reset: () => void;
+  setMembersAnswers: (answers: LobbyState['membersAnswers']) => void;
 }
 
 const initialState = {
@@ -79,4 +91,5 @@ export const useLobbyStore = create<LobbyState>()((set) => ({
   setHasAnswered: (answered) => set({ hasAnswered: answered }),
   setSend: (send) => set({ send }),
   reset: () => set(initialState),
+  setMembersAnswers: (answers) => set({ membersAnswers: answers }),
 }));

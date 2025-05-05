@@ -25,6 +25,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
+import { useLobbyStore } from '@/state/stores/lobbyState/lobbyStore';
 
 interface QuizStatus {
   completed: string[];
@@ -34,15 +35,17 @@ interface QuizStatus {
 
 interface CompiledAnswers {
   success: boolean;
-  quizAnswers: Record<string, string[]>;
-  phase1Answers: Record<
-    string,
-    {
-      originAirport: string;
-      budget: number;
-      hasLicense: boolean;
-    }
-  >;
+  data: {
+    quizAnswers: Record<string, string[]>;
+    phase1Answers: Record<
+      string,
+      {
+        originAirport: string;
+        budget: number;
+        hasLicense: boolean;
+      }
+    >;
+  };
 }
 
 export default function QuizScreen() {
@@ -52,6 +55,7 @@ export default function QuizScreen() {
   const [totalMembers, setTotalMembers] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number | null>(30); // Initialize with 30
   const [answers, setAnswers] = useState<string[]>([]);
+  const setMembersAnswers = useLobbyStore((state) => state.setMembersAnswers);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const imagesLoaded = useImagePreloader(
@@ -104,10 +108,8 @@ export default function QuizScreen() {
 
     // Host-only: receive all answers when everyone completes
     socket.on('allAnswersCompiled', (data: CompiledAnswers) => {
-      if (data.success) {
-        console.log(
-          'All answers compiled for host:' + JSON.stringify(data, null, 2)
-        );
+      if (data.success && data.data) {
+        setMembersAnswers(data.data);
       }
     });
 
