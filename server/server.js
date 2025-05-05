@@ -287,6 +287,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('computedDestination', (data) => {
+    console.log('computedDestination', JSON.stringify(data));
     const lobbyCode = socketToLobby[socket.id];
     const lobby = lobbies[lobbyCode];
 
@@ -295,6 +296,7 @@ io.on('connection', (socket) => {
     }
 
     // Broadcast the computed destination to all members in the lobby
+    console.log(`Broadcasting computed destination to lobby ${lobbyCode}:`);
     io.emit('destinationComputed', {
       success: true,
       data: data,
