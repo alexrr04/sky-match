@@ -8,6 +8,7 @@ const io = new Server(server);
 
 const lobbies = {};
 const socketToLobby = {}; // Keep track of which socket is in which lobby
+const answers = []; // Answers from the quiz
 
 function generateLobbyCode(length = 6) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -30,7 +31,7 @@ io.on('connection', (socket) => {
 
     lobbies[lobbyCode] = {
       host: socket.id,
-      members: [{ id: socket.id, name, isHost: true }],
+      members: [{ id: socket.id, name, isHost: true, phase1Answers: null }],
       lobbyCode,
       gameStarted: false,
       phase1Completed: new Set(),
@@ -162,19 +163,33 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Find the member and store their answers
+    const member = lobby.members.find((m) => m.id === socket.id);
+    if (member) {
+      member.phase1Answers = data.answers;
+    }
+
     lobby.phase1Completed.add(socket.id);
 
     const allCompleted = Array.from(lobby.members).every((member) =>
       lobby.phase1Completed.has(member.id)
     );
 
+    // Get all phase1 answers from members
+    const membersAnswers = lobby.members.reduce((acc, member) => {
+      acc[member.id] = member.phase1Answers;
+      return acc;
+    }, {});
+
     io.emit('phase1Status', {
       lobbyCode,
       completed: Array.from(lobby.phase1Completed),
       total: lobby.members.length,
+      membersAnswers,
     });
 
     if (allCompleted) {
+      console.log('All members completed phase 1\n' + membersAnswers);
       if (lobby.phase1Timer) {
         clearTimeout(lobby.phase1Timer);
       }
@@ -188,6 +203,7 @@ io.on('connection', (socket) => {
       success: true,
       completed: lobby.phase1Completed.size,
       total: lobby.members.length,
+      membersAnswers,
     });
   });
 
@@ -233,6 +249,7 @@ io.on('connection', (socket) => {
       id: socket.id,
       name: data.name || 'Guest',
       isHost: false,
+      phase1Answers: null,
     });
 
     socketToLobby[socket.id] = lobbyCode;
