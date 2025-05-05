@@ -52,6 +52,10 @@ io.on('connection', (socket) => {
 
     socketToLobby[socket.id] = lobbyCode;
 
+    // Join lobby room and host-specific room
+    socket.join(lobbyCode);
+    socket.join(`${lobbyCode}-host`);
+
     console.log('Lobby created:', lobbies[lobbyCode]);
     callback({
       success: true,
@@ -118,24 +122,6 @@ io.on('connection', (socket) => {
     // Add this user to completed set
     lobby.quizCompleted.add(socket.id);
 
-    // // If this is the first person to complete, start the 30-second timer
-    // if (lobby.quizCompleted.size === 1) {
-    //   lobby.quizStartTime = Date.now();
-    //   lobby.quizTimer = setTimeout(() => {
-    //     if (lobbies[lobbyCode]) {
-    //       io.emit('quizTimeUp', {
-    //         lobbyCode,
-    //         success: true,
-    //       });
-    //       clearTimeout(lobby.quizTimer);
-    //       // Navigate everyone to countdown after 1 second
-    //       setTimeout(() => {
-    //         io.emit('navigateToCountdown', { lobbyCode });
-    //       }, 1000);
-    //     }
-    //   }, 30000); // 30 seconds
-    // }
-
     // Check if everyone has completed
     const allCompleted = Array.from(lobby.members).every((member) =>
       lobby.quizCompleted.has(member.id)
@@ -162,10 +148,10 @@ io.on('connection', (socket) => {
         }, {}),
       };
 
-      // Send answers only to the host
-      socket.to(lobby.host).emit('allAnswersCompiled', {
+      // Send answers to the host room
+      io.to(`${lobbyCode}-host`).emit('allAnswersCompiled', {
         success: true,
-        ...allAnswers,
+        data: allAnswers,
       });
 
       console.log(
@@ -290,6 +276,9 @@ io.on('connection', (socket) => {
 
     socketToLobby[socket.id] = lobbyCode;
 
+    // Join lobby room
+    socket.join(lobbyCode);
+
     console.log(`Socket ${socket.id} joined lobby ${lobbyCode}`);
 
     callback({
@@ -311,7 +300,13 @@ io.on('connection', (socket) => {
 
     const lobbyCode = socketToLobby[socket.id];
     if (lobbyCode && lobbies[lobbyCode]) {
+      // Leave the lobby room
+      socket.leave(lobbyCode);
+
       const isHost = lobbies[lobbyCode].host === socket.id;
+      if (isHost) {
+        socket.leave(`${lobbyCode}-host`);
+      }
 
       lobbies[lobbyCode].members = lobbies[lobbyCode].members.filter(
         (member) => member.id !== socket.id
