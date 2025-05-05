@@ -8,11 +8,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTripStore } from '@/state/stores/tripState/tripState';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { ThemedText } from '@/components/ThemedText';
-import { getDestination } from '@/constants/Destinations';
 import { Colors } from '@/constants/Colors';
 import airportsWithAttributes from '@/constants/airports_with_attributes.json';
 import { AirportAttributes } from '@/constants/types';
@@ -24,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigate } from '@/hooks/useNavigate';
+import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
 
 const { width, height } = Dimensions.get('window');
 
@@ -53,7 +52,9 @@ export default function EndGameScreen() {
     transform: [{ scale: scale.value }],
   }));
 
-  const { getSelectedDestination, getDestinationImage } = useTripStore();
+  const getSelectedDestination = useTripStateAction('getSelectedDestination');
+  const getDestinationImage = useTripStateAction('getDestinationImage');
+
   const handleReturnHome = () => {
     navigateTo('/(game)' as any);
   };
