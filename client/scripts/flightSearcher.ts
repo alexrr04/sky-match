@@ -60,10 +60,20 @@ export async function findDestinationsWithinBudget(
     const url = new URL(API_URL);
     url.searchParams.append('origin', origin);
     url.searchParams.append('maxPrice', maxBudget.toString());
+    url.searchParams.append('departureDate', departureDate);
+    url.searchParams.append('oneWay', 'false');
+
+    // Calculate duration in days between departure and return
+    const duration = Math.ceil(
+      (new Date(returnDate).getTime() - new Date(departureDate).getTime()) /
+        (1000 * 3600 * 24)
+    );
+    url.searchParams.append('duration', duration.toString());
 
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
+        accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
     });
