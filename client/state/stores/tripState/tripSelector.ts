@@ -17,11 +17,13 @@ type TripStateActions = {
 export function useTripStateReactive<K extends TripStateKeys>(
   key: K
 ): TripState[K] {
-  const [state, setState] = useState(() => useTripStore.getState()[key]);
+  const [state, setState] = useState(
+    () => (useTripStore.getState() as any)[key] as TripState[K]
+  );
 
   useEffect(() => {
     const unsubscribe = useTripStore.subscribe((newState) =>
-      setState(newState[key])
+      setState((newState as any)[key])
     );
     return unsubscribe;
   }, [key]);
@@ -39,7 +41,7 @@ export function useTripStateReactive<K extends TripStateKeys>(
 export function getTripStateValue<K extends TripStateKeys>(
   key: K
 ): TripState[K] {
-  return useTripStore.getState()[key];
+  return (useTripStore.getState() as any)[key] as TripState[K];
 }
 
 /**
@@ -53,5 +55,5 @@ export function getTripStateValue<K extends TripStateKeys>(
 export function useTripStateAction<T extends TripStateActions>(
   action: T
 ): TripState[T] {
-  return useTripStore.getState()[action];
+  return getTripStateValue(action);
 }

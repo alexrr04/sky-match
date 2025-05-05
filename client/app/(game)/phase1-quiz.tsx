@@ -12,8 +12,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useNavigate } from '@/hooks/useNavigate';
-import { useTripStore } from '@/state/stores/tripState/tripState';
 import { socket } from '@/utils/socket';
+import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
 
 interface Phase1Answer {
   originAirport: string;
@@ -53,8 +53,6 @@ export default function Phase1Quiz() {
   const [totalMembers, setTotalMembers] = useState(0);
 
   const { navigateTo } = useNavigate();
-
-  const { setPhase1Data } = useTripStore();
 
   useEffect(() => {
     // Set up timer for auto-submit
