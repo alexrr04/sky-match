@@ -6,24 +6,11 @@ const amadeus = new Amadeus({
   clientSecret: process.env.AMADEUS_API_SECRET,
 });
 
-async function findDestinationsWithinBudget(
-  origin,
-  departureDate,
-  returnDate,
-  maxBudget
-) {
+async function findDestinationsWithinBudget(origin) {
   try {
-    const duration = Math.ceil(
-      (new Date(returnDate).getTime() - new Date(departureDate).getTime()) /
-        (1000 * 3600 * 24)
-    );
-
+    console.log('Searching flights from:', origin);
     const response = await amadeus.shopping.flightDestinations.get({
       origin,
-      maxPrice: maxBudget,
-      departureDate,
-      oneWay: false,
-      duration: duration,
     });
 
     if (!response.data || response.data.length === 0) {
