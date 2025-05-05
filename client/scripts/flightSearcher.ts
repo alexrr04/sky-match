@@ -1,187 +1,96 @@
-import { SKYSCANNER_API_KEY, SKYSCANNER_API_URL } from '@/scripts/config';
+const AUTH_URL = 'https://test.api.amadeus.com/v1/security/oauth2/token';
+const API_URL = 'https://test.api.amadeus.com/v1/shopping/flight-destinations';
+
+if (
+  !process.env.FLIGHT_SERVICE_API_KEY ||
+  !process.env.FLIGHT_SERVICE_API_SECRET
+) {
+  throw new Error('Missing Amadeus API credentials in environment variables');
+}
+interface AmadeusResponse {
+  data: {
+    type: string;
+    origin: string;
+    destination: string;
+    departureDate: string;
+    returnDate: string;
+    price: {
+      total: string;
+    };
+  }[];
+}
 
 interface FlightOption {
   destination: string;
-  outboundFlight: {
-    airline: string;
-    price: number;
-    isDirect: boolean;
-  };
-  returnFlight: {
-    airline: string;
-    price: number;
-    isDirect: boolean;
-  };
+  departureDate: string;
+  returnDate: string;
+  price: number;
 }
 
-interface FlightSearchRequest {
-  query: {
-    market: string;
-    locale: string;
-    currency: string;
-    queryLegs: {
-      originPlace: {
-        queryPlace: {
-          iata: string;
-        };
-      };
-      destinationPlace: {
-        anywhere?: boolean;
-        queryPlace?: {
-          iata: string;
-        };
-      };
-      fixedDate: {
-        year: number;
-        month: number;
-        day: number;
-      };
-    }[];
-  };
+async function getAccessToken(): Promise<string> {
+  try {
+    const body = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: FLIGHT_SERVICE_API_KEY,
+      client_secret: FLIGHT_SERVICE_API_SECRET,
+    });
+
+    const response = await fetch(AUTH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    });
+
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error('Error getting access token:', error);
+    throw error;
+  }
 }
 
-function parseDate(dateStr: string): {
-  year: number;
-  month: number;
-  day: number;
-} {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  return { year, month, day };
-}
-
-async function findDestinationsWithinBudget(
+export async function findDestinationsWithinBudget(
   origin: string,
   departureDate: string,
   returnDate: string,
   maxBudget: number
 ): Promise<FlightOption[]> {
   try {
-    // Search outbound flights
-    const outboundRequest: FlightSearchRequest = {
-      query: {
-        market: 'ES',
-        locale: 'en-GB',
-        currency: 'EUR',
-        queryLegs: [
-          {
-            originPlace: {
-              queryPlace: {
-                iata: origin,
-              },
-            },
-            destinationPlace: {
-              anywhere: true,
-            },
-            fixedDate: parseDate(departureDate),
-          },
-        ],
+    const accessToken = await getAccessToken();
+
+    const url = new URL(API_URL);
+    url.searchParams.append('origin', origin);
+    url.searchParams.append('maxPrice', maxBudget.toString());
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    };
-
-    const headers = new Headers();
-    headers.append('x-api-key', SKYSCANNER_API_KEY);
-    headers.append('Content-Type', 'application/json');
-
-    const outboundResponse = await fetch(SKYSCANNER_API_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(outboundRequest),
     });
 
-    const outboundData = await outboundResponse.json();
-    if (!outboundData?.content?.results) {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = (await response.json()) as AmadeusResponse;
+
+    if (!data.data || data.data.length === 0) {
       return [];
     }
 
-    const {
-      quotes: outboundQuotes,
-      carriers: outboundCarriers,
-      places,
-    } = outboundData.content.results;
-    const flightOptions: FlightOption[] = [];
+    const flightOptions: FlightOption[] = data.data.map((flight) => ({
+      destination: flight.destination,
+      departureDate: flight.departureDate,
+      returnDate: flight.returnDate,
+      price: parseFloat(flight.price.total),
+    }));
 
-    // Process outbound flights
-    for (const quote of Object.values(outboundQuotes as Record<string, any>)) {
-      const destination = places[quote.outboundLeg.destinationPlaceId];
-      const destinationIata = destination.iata;
-      const outboundPrice = parseInt(quote.minPrice.amount);
-
-      // Search return flights for this destination
-      const returnRequest: FlightSearchRequest = {
-        query: {
-          market: 'ES',
-          locale: 'en-GB',
-          currency: 'EUR',
-          queryLegs: [
-            {
-              originPlace: {
-                queryPlace: {
-                  iata: destinationIata,
-                },
-              },
-              destinationPlace: {
-                queryPlace: {
-                  iata: origin,
-                },
-              },
-              fixedDate: parseDate(returnDate),
-            },
-          ],
-        },
-      };
-
-      const returnResponse = await fetch(SKYSCANNER_API_URL, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(returnRequest),
-      });
-
-      const returnData = await returnResponse.json();
-      if (!returnData?.content?.results?.quotes) {
-        continue;
-      }
-
-      const { quotes: returnQuotes, carriers: returnCarriers } =
-        returnData.content.results;
-
-      for (const returnQuote of Object.values(
-        returnQuotes as Record<string, any>
-      )) {
-        const outboundAirline =
-          outboundCarriers[quote.outboundLeg.marketingCarrierId];
-        const returnAirline =
-          returnCarriers[returnQuote.outboundLeg.marketingCarrierId];
-        const returnPrice = parseInt(returnQuote.minPrice.amount);
-
-        // Only include if total price is within budget
-        if (outboundPrice + returnPrice <= maxBudget) {
-          flightOptions.push({
-            destination: `${destination.name} (${destinationIata})`,
-            outboundFlight: {
-              airline: outboundAirline.name,
-              price: outboundPrice,
-              isDirect: quote.isDirect,
-            },
-            returnFlight: {
-              airline: returnAirline.name,
-              price: returnPrice,
-              isDirect: returnQuote.isDirect,
-            },
-          });
-        }
-      }
-    }
-
-    return flightOptions.sort(
-      (a, b) =>
-        a.outboundFlight.price +
-        a.returnFlight.price -
-        (b.outboundFlight.price + b.returnFlight.price)
-    );
+    return flightOptions.sort((a, b) => a.price - b.price);
   } catch (error) {
     console.error('Error searching flights:', error);
     return [];
   }
 }
-
-export { findDestinationsWithinBudget };
