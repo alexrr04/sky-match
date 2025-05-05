@@ -1,18 +1,11 @@
 import { create } from 'zustand';
+import { Phase } from '@/state/stores/tripState/tripState';
 
 export interface Player {
   playerId: string;
   name: string;
   isHost: boolean;
 }
-
-type Phase =
-  | 'waiting'
-  | 'personal'
-  | 'preference'
-  | 'results_processing'
-  | 'countdown'
-  | 'done';
 
 interface Question {
   id: string;
@@ -24,6 +17,7 @@ interface LobbyState {
   playerId: string | null;
   players: Player[];
   phase: Phase;
+  isHost: boolean;
   currentQuestion: Question | null;
   hasAnswered: boolean;
   send: (msg: any) => void;
@@ -62,6 +56,7 @@ export const useLobbyStore = create<LobbyState>()((set, get) => ({
   playerId: null,
   players: [],
   phase: 'waiting' as Phase,
+  isHost: false,
   currentQuestion: null,
   hasAnswered: false,
   send: () => {},

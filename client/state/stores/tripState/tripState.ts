@@ -1,7 +1,15 @@
 import { GroupDestination } from '@/constants/types';
 
+export type Phase =
+  | 'waiting'
+  | 'personal'
+  | 'preference'
+  | 'results_processing'
+  | 'countdown'
+  | 'done';
+
 export interface TripState {
-  phase: number;
+  phase: Phase;
   progress: number;
   memberPreferences: Record<string, boolean>;
   membersAnswers: {
@@ -17,7 +25,7 @@ export interface TripState {
   };
   selectedDestination: GroupDestination | null;
   destinationImage: string | null;
-  setPhase: (phase: number) => void;
+  setPhase: (phase: Phase) => void;
   setProgress: (progress: number) => void;
   getPhase: () => number;
   getProgress: () => number;

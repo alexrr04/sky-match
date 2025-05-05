@@ -5,6 +5,7 @@ type Phase =
   | 'personal'
   | 'preference'
   | 'results_processing'
+  | 'countdown'
   | 'done';
 
 interface Question {
@@ -16,6 +17,7 @@ export interface LobbyState {
   lobbyCode: string | null;
   playerId: string | null;
   players: Player[];
+  isHost: boolean;
   phase: Phase;
   currentQuestion: Question | null;
   hasAnswered: boolean;

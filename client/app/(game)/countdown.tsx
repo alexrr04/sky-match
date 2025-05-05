@@ -14,10 +14,13 @@ import {
   useTripStateAction,
   useTripStateReactive,
 } from '@/state/stores/tripState/tripSelector';
-import { useLobbyStore } from '@/state/stores/lobbyState/lobbyStore';
 import { findBestMatchingDestinations } from '@/scripts/destinationMatcher';
 import { socket } from '@/utils/socket';
 import { GroupInput, Member, GroupDestination } from '@/constants/types';
+import {
+  getLobbyStateValue,
+  useLobbyStateAction,
+} from '@/state/stores/lobbyState/lobbySelector';
 
 const { width, height } = Dimensions.get('window');
 
@@ -54,13 +57,10 @@ export default function CountdownScreen() {
   const { navigateTo } = useNavigate();
 
   const membersAnswers = useTripStateReactive('membersAnswers');
-  const isHost = useLobbyStore(
-    (state) => state.players.find((p) => p.isHost)?.playerId === socket.id
-  );
+  const isHost = getLobbyStateValue('isHost');
+  const lobbyCode = getLobbyStateValue('lobbyCode');
   const setSelectedDestination = useTripStateAction('setSelectedDestination');
-  const { setPhase } = useLobbyStore((state) => ({
-    setPhase: state.setPhase,
-  }));
+  const setPhase = useLobbyStateAction('setPhase');
 
   useEffect(() => {
     if (isHost && membersAnswers) {
@@ -81,7 +81,7 @@ export default function CountdownScreen() {
         ),
         departureDate: '2024-06-01',
         returnDate: '2024-06-07',
-        code: useLobbyStore.getState().lobbyCode || 'DEFAULT',
+        code: lobbyCode || 'DEFAULT',
       };
 
       // Compute destination
