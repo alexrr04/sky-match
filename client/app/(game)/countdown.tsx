@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
-import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigate } from '@/hooks/useNavigate';
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,6 +11,7 @@ export default function CountdownScreen() {
   const [count, setCount] = useState(3);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
+  const { navigateTo } = useNavigate();
 
   useEffect(() => {
     // Initial animation
@@ -26,7 +27,7 @@ export default function CountdownScreen() {
           clearInterval(interval);
           // Navigate to end-game after the last animation
           setTimeout(() => {
-            router.replace('/end-game' as any);
+            navigateTo('/end-game' as any);
           }, 1000);
           return 0;
         }
@@ -61,13 +62,11 @@ export default function CountdownScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <ThemedText style={styles.title}>
-          Get Ready!
-        </ThemedText>
+        <ThemedText style={styles.title}>Get Ready!</ThemedText>
         <ThemedText style={styles.subtitle}>
           Get ready to see your perfect trip...
         </ThemedText>
-        
+
         <View style={styles.countdownContainer}>
           <Animated.View
             style={[
@@ -81,10 +80,10 @@ export default function CountdownScreen() {
             {count > 0 ? (
               <ThemedText style={styles.number}>{count}</ThemedText>
             ) : (
-              <MaterialIcons 
-                name="flight-takeoff" 
-                size={64} 
-                color={Colors.light.primary} 
+              <MaterialIcons
+                name="flight-takeoff"
+                size={64}
+                color={Colors.light.primary}
               />
             )}
           </Animated.View>
@@ -146,5 +145,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     height: 160,
-  }
+  },
 });
