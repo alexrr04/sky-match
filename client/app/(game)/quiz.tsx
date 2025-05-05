@@ -31,7 +31,19 @@ interface QuizStatus {
   completed: string[];
   total: number;
   timeStarted: number | null;
-  membersAnswers?: Record<string, string[]>;
+}
+
+interface CompiledAnswers {
+  success: boolean;
+  quizAnswers: Record<string, string[]>;
+  phase1Answers: Record<
+    string,
+    {
+      originAirport: string;
+      budget: number;
+      hasLicense: boolean;
+    }
+  >;
 }
 
 export default function QuizScreen() {
@@ -89,10 +101,12 @@ export default function QuizScreen() {
         const remaining = Math.max(30 - elapsed, 0);
         setTimeLeft(remaining);
       }
+    });
 
-      // Log the answers if available
-      if (data.membersAnswers) {
-        console.log('Quiz answers from all members:', data.membersAnswers);
+    // Host-only: receive all answers when everyone completes
+    socket.on('allAnswersCompiled', (data: CompiledAnswers) => {
+      if (data.success) {
+        console.log('All answers compiled for host:', data);
       }
     });
 
@@ -112,6 +126,7 @@ export default function QuizScreen() {
       socket.off('quizStatus');
       socket.off('quizTimeUp');
       socket.off('navigateToCountdown');
+      socket.off('allAnswersCompiled');
     };
   }, [isSubmitting]);
 
@@ -189,19 +204,9 @@ export default function QuizScreen() {
     socket.emit(
       'submitQuiz',
       { answers },
-      (response: {
-        success: boolean;
-        message?: string;
-        membersAnswers?: Record<string, string[]>;
-      }) => {
+      (response: { success: boolean; message?: string }) => {
         if (!response.success) {
           console.error('Failed to submit quiz:', response.message);
-        }
-        if (response.membersAnswers) {
-          console.log(
-            'Quiz answers after submission:',
-            response.membersAnswers
-          );
         }
       }
     );

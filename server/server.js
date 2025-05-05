@@ -141,32 +141,39 @@ io.on('connection', (socket) => {
       lobby.quizCompleted.has(member.id)
     );
 
-    // Get all quiz answers from members
-    const membersAnswers = lobby.members.reduce((acc, member) => {
-      acc[member.id] = member.quizAnswers;
-      return acc;
-    }, {});
-
     // Notify everyone about completion status
     io.emit('quizStatus', {
       lobbyCode,
       completed: Array.from(lobby.quizCompleted),
       total: lobby.members.length,
       timeStarted: lobby.quizStartTime,
-      membersAnswers,
     });
 
     if (allCompleted) {
-      // Clear the timer since everyone finished early
-      console.log(
-        'All members completed the quiz\n' +
-          JSON.stringify(membersAnswers, null, 2)
-      );
-      if (lobby.quizTimer) {
-        clearTimeout(lobby.quizTimer);
-      }
+      // Get both quiz and phase1 answers
+      const allAnswers = {
+        quizAnswers: lobby.members.reduce((acc, member) => {
+          acc[member.id] = member.quizAnswers;
+          return acc;
+        }, {}),
+        phase1Answers: lobby.members.reduce((acc, member) => {
+          acc[member.id] = member.phase1Answers;
+          return acc;
+        }, {}),
+      };
 
-      // Give a short delay before navigation
+      // Send answers only to the host
+      socket.to(lobby.host).emit('allAnswersCompiled', {
+        success: true,
+        ...allAnswers,
+      });
+
+      console.log(
+        'Sending all answers to host:\n',
+        JSON.stringify(allAnswers, null, 2)
+      );
+
+      // Navigate everyone to countdown
       setTimeout(() => {
         io.emit('navigateToCountdown', { lobbyCode });
       }, 1000);
@@ -176,7 +183,6 @@ io.on('connection', (socket) => {
       success: true,
       completed: lobby.quizCompleted.size,
       total: lobby.members.length,
-      membersAnswers,
     });
   });
 
