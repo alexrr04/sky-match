@@ -91,11 +91,17 @@ export default function CountdownScreen() {
       (async () => {
         try {
           const destinations = await findBestMatchingDestinations(groupInput);
+          console.log('Matching destinations:', destinations);
           if (destinations.length > 0) {
             const bestDestination = destinations[0];
             socket.emit('computedDestination', {
               success: true,
               data: bestDestination,
+            });
+          } else {
+            socket.emit('computedDestination', {
+              success: false,
+              data: 'No matching destinations found.',
             });
           }
         } catch (error) {
@@ -110,6 +116,11 @@ export default function CountdownScreen() {
         setSelectedDestination(data.data);
         setIsLoading(false);
         setCountdownStarted(true);
+        setPhase('countdown');
+        startCountdown();
+      } else {
+        console.log('Error computing destination');
+        setIsLoading(false);
         setPhase('countdown');
         startCountdown();
       }
