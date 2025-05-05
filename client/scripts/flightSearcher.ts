@@ -1,12 +1,9 @@
 const AUTH_URL = 'https://test.api.amadeus.com/v1/security/oauth2/token';
 const API_URL = 'https://test.api.amadeus.com/v1/shopping/flight-destinations';
 
-if (
-  !process.env.FLIGHT_SERVICE_API_KEY ||
-  !process.env.FLIGHT_SERVICE_API_SECRET
-) {
-  throw new Error('Missing Amadeus API credentials in environment variables');
-}
+const FLIGHT_SERVICE_API_KEY = 'fBV6ux7cVhsGIc1KfAcATTx2vVkDMnvI';
+const FLIGHT_SERVICE_API_SECRET = '7M7bJP7gNuENRG1Z';
+
 interface AmadeusResponse {
   data: {
     type: string;
