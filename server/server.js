@@ -31,7 +31,15 @@ io.on('connection', (socket) => {
 
     lobbies[lobbyCode] = {
       host: socket.id,
-      members: [{ id: socket.id, name, isHost: true, phase1Answers: null }],
+      members: [
+        {
+          id: socket.id,
+          name,
+          isHost: true,
+          phase1Answers: null,
+          quizAnswers: null,
+        },
+      ],
       lobbyCode,
       gameStarted: false,
       phase1Completed: new Set(),
@@ -101,6 +109,12 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Find the member and store their answers
+    const member = lobby.members.find((m) => m.id === socket.id);
+    if (member) {
+      member.quizAnswers = data.answers;
+    }
+
     // Add this user to completed set
     lobby.quizCompleted.add(socket.id);
 
@@ -127,12 +141,19 @@ io.on('connection', (socket) => {
       lobby.quizCompleted.has(member.id)
     );
 
+    // Get all quiz answers from members
+    const membersAnswers = lobby.members.reduce((acc, member) => {
+      acc[member.id] = member.quizAnswers;
+      return acc;
+    }, {});
+
     // Notify everyone about completion status
     io.emit('quizStatus', {
       lobbyCode,
       completed: Array.from(lobby.quizCompleted),
       total: lobby.members.length,
       timeStarted: lobby.quizStartTime,
+      membersAnswers,
     });
 
     if (allCompleted) {
@@ -151,6 +172,7 @@ io.on('connection', (socket) => {
       success: true,
       completed: lobby.quizCompleted.size,
       total: lobby.members.length,
+      membersAnswers,
     });
   });
 
@@ -253,6 +275,7 @@ io.on('connection', (socket) => {
       name: data.name || 'Guest',
       isHost: false,
       phase1Answers: null,
+      quizAnswers: null,
     });
 
     socketToLobby[socket.id] = lobbyCode;

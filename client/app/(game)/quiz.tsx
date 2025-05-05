@@ -31,6 +31,7 @@ interface QuizStatus {
   completed: string[];
   total: number;
   timeStarted: number | null;
+  membersAnswers?: Record<string, string[]>;
 }
 
 export default function QuizScreen() {
@@ -87,6 +88,11 @@ export default function QuizScreen() {
         const elapsed = Math.floor((Date.now() - data.timeStarted) / 1000);
         const remaining = Math.max(30 - elapsed, 0);
         setTimeLeft(remaining);
+      }
+
+      // Log the answers if available
+      if (data.membersAnswers) {
+        console.log('Quiz answers from all members:', data.membersAnswers);
       }
     });
 
@@ -183,9 +189,19 @@ export default function QuizScreen() {
     socket.emit(
       'submitQuiz',
       { answers },
-      (response: { success: boolean; message?: string }) => {
+      (response: {
+        success: boolean;
+        message?: string;
+        membersAnswers?: Record<string, string[]>;
+      }) => {
         if (!response.success) {
           console.error('Failed to submit quiz:', response.message);
+        }
+        if (response.membersAnswers) {
+          console.log(
+            'Quiz answers after submission:',
+            response.membersAnswers
+          );
         }
       }
     );
@@ -196,14 +212,15 @@ export default function QuizScreen() {
       direction === 'left'
         ? currentQuestion.optionLeft
         : currentQuestion.optionRight;
-    console.log(
-      `Question ${currentQuestion.id}: User chose ${selectedOption.label}`
-    );
+
+    // Store the answer
+    setAnswers((prev) => [...prev, selectedOption.label]);
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      navigateTo('/countdown');
+      // All questions answered, submit the quiz
+      handleQuizComplete();
     }
   };
 
@@ -214,9 +231,6 @@ export default function QuizScreen() {
         <ThemedText style={styles.waitingText}>
           {completedMembers.length} of {totalMembers} members ready
         </ThemedText>
-        {/* <ThemedText style={styles.timerText}>
-          {Math.floor(timeLeft || 0)}s left
-        </ThemedText> */}
       </View>
     );
   }
