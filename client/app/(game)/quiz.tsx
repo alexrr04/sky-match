@@ -106,7 +106,9 @@ export default function QuizScreen() {
     // Host-only: receive all answers when everyone completes
     socket.on('allAnswersCompiled', (data: CompiledAnswers) => {
       if (data.success) {
-        console.log('All answers compiled for host:', data);
+        console.log(
+          'All answers compiled for host:' + JSON.stringify(data, null, 2)
+        );
       }
     });
 
