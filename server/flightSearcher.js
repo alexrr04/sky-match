@@ -10,7 +10,7 @@ async function findDestinationsWithinBudget(origin) {
   try {
     console.log('Searching flights from:', origin);
     const response = await amadeus.shopping.flightDestinations.get({
-      origin,
+      origin: origin,
     });
 
     if (!response.data || response.data.length === 0) {
