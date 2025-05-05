@@ -1,7 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { useTripStore } from '@/state/stores/tripState/tripState';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -11,18 +17,20 @@ import { Colors } from '@/constants/Colors';
 import airportsWithAttributes from '@/constants/airports_with_attributes.json';
 import { AirportAttributes } from '@/constants/types';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import Animated, { 
-  useAnimatedStyle, 
+import Animated, {
+  useAnimatedStyle,
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { useNavigate } from '@/hooks/useNavigate';
 
 const { width, height } = Dimensions.get('window');
 
 export default function EndGameScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const confettiRef = useRef<ConfettiCannon>(null);
+  const { navigateTo } = useNavigate();
 
   useEffect(() => {
     // Shoot confetti when the screen appears
@@ -30,51 +38,53 @@ export default function EndGameScreen() {
       confettiRef.current?.start();
     }, 100);
   }, []);
-  
+
   // Animation for download button
   const scale = useSharedValue(1);
-  
+
   const handleDownload = () => {
     scale.value = withSpring(0.9, {}, () => {
       scale.value = withSpring(1);
     });
     // TODO: Implement PDF generation and download
   };
-  
+
   const downloadButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
+    transform: [{ scale: scale.value }],
   }));
 
   const { getSelectedDestination, getDestinationImage } = useTripStore();
   const handleReturnHome = () => {
-    router.replace('/(game)' as any);
+    navigateTo('/(game)' as any);
   };
 
   const destination = getSelectedDestination();
 
   if (!destination) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: Colors.light.background }]}
+        edges={['top']}
+      >
         <View style={[styles.contentContainer, styles.noDestinationContainer]}>
           <View style={styles.noDestinationContent}>
-            <MaterialIcons 
-              name="search-off" 
-              size={80} 
-              color={Colors.light.primary} 
+            <MaterialIcons
+              name="search-off"
+              size={80}
+              color={Colors.light.primary}
               style={styles.noDestinationIcon}
             />
             <ThemedText style={[styles.congratsText, styles.noDestinationText]}>
               No Perfect Match Found
             </ThemedText>
             <ThemedText style={styles.noDestinationSubtext}>
-              We couldn&apos;t find a destination that matches all your group&apos;s preferences. Try adjusting your criteria and try again.
+              We couldn&apos;t find a destination that matches all your
+              group&apos;s preferences. Try adjusting your criteria and try
+              again.
             </ThemedText>
           </View>
           <View style={styles.bottomButton}>
-            <PrimaryButton
-              onPress={handleReturnHome}
-              label="Return Home"
-            />
+            <PrimaryButton onPress={handleReturnHome} label="Return Home" />
           </View>
         </View>
       </SafeAreaView>
@@ -84,20 +94,26 @@ export default function EndGameScreen() {
   const iata = destination.destination.split(' (')[1].replace(')', '');
   const destinationName = destination.destination.split(' (')[0];
 
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: Colors.light.background }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: Colors.light.background }]}
+      edges={['top']}
+    >
       {/* Confetti overlay */}
       <View style={styles.confettiContainer}>
         <ConfettiCannon
           ref={confettiRef}
           count={200}
-          origin={{x: width/2, y: -50}}
+          origin={{ x: width / 2, y: -50 }}
           autoStart={false}
           fadeOut={true}
           fallSpeed={2000}
           explosionSpeed={350}
-          colors={[Colors.light.primary, Colors.light.accent, Colors.light.secondary]}
+          colors={[
+            Colors.light.primary,
+            Colors.light.accent,
+            Colors.light.secondary,
+          ]}
         />
       </View>
       <ScrollView style={styles.scrollView}>
@@ -122,16 +138,22 @@ export default function EndGameScreen() {
               />
             )}
             <View style={styles.destinationInfo}>
-            <ThemedText style={styles.cityName}>
-              {destinationName}
-            </ThemedText>
-            <View style={styles.countryContainer}>
-              <ThemedText style={styles.countryName}>
-                {(airportsWithAttributes as AirportAttributes[]).find(a => a.iata === iata)?.country}
-              </ThemedText>
+              <ThemedText style={styles.cityName}>{destinationName}</ThemedText>
+              <View style={styles.countryContainer}>
+                <ThemedText style={styles.countryName}>
+                  {
+                    (airportsWithAttributes as AirportAttributes[]).find(
+                      (a) => a.iata === iata
+                    )?.country
+                  }
+                </ThemedText>
                 <TouchableOpacity onPress={handleDownload}>
                   <Animated.View style={downloadButtonStyle}>
-                    <MaterialIcons name="file-download" size={20} color={Colors.light.primary} />
+                    <MaterialIcons
+                      name="file-download"
+                      size={20}
+                      color={Colors.light.primary}
+                    />
                   </Animated.View>
                 </TouchableOpacity>
               </View>
@@ -140,9 +162,9 @@ export default function EndGameScreen() {
 
           {/* Description */}
           <View style={styles.section}>
-          <ThemedText style={styles.description}>
-            Total Group Cost: €{destination.totalGroupCost}
-          </ThemedText>
+            <ThemedText style={styles.description}>
+              Total Group Cost: €{destination.totalGroupCost}
+            </ThemedText>
           </View>
 
           {/* Characteristics */}
@@ -151,52 +173,73 @@ export default function EndGameScreen() {
             <View style={styles.characteristicsContainer}>
               {Object.entries(destination.matchDetails)
                 .sort((a, b) => b[1].score - a[1].score)
-                .map(([attr, detail], index) => (
-                  detail.matches.length > 0 && (
-                    <View key={index} style={styles.characteristicItem}>
-                      <FontAwesome5 name="check-circle" size={16} color={Colors.light.primary} />
-                      <ThemedText style={styles.characteristicText}>
-                        {attr}
-                      </ThemedText>
-                    </View>
-                  )
-                ))}
+                .map(
+                  ([attr, detail], index) =>
+                    detail.matches.length > 0 && (
+                      <View key={index} style={styles.characteristicItem}>
+                        <FontAwesome5
+                          name="check-circle"
+                          size={16}
+                          color={Colors.light.primary}
+                        />
+                        <ThemedText style={styles.characteristicText}>
+                          {attr}
+                        </ThemedText>
+                      </View>
+                    )
+                )}
             </View>
           </View>
 
           {/* Flight Info */}
           <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Flight Information</ThemedText>
+            <ThemedText style={styles.sectionTitle}>
+              Flight Information
+            </ThemedText>
             <View style={styles.flightCard}>
-              {Object.entries(destination.memberFlights).map(([memberName, flights], index) => (
-                <View key={index}>
-                  <ThemedText style={styles.flightHeader}>
-                    {memberName} ({flights.origin} → {iata})
-                  </ThemedText>
-                  <View style={styles.flightDetail}>
-                    <FontAwesome5 name="plane" size={16} color={Colors.light.primary} />
-                    <ThemedText style={styles.flightText}>
-                      Outbound: {flights.outboundFlight.airline} - €{flights.outboundFlight.price}
-                      {flights.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'}
+              {Object.entries(destination.memberFlights).map(
+                ([memberName, flights], index) => (
+                  <View key={index}>
+                    <ThemedText style={styles.flightHeader}>
+                      {memberName} ({flights.origin} → {iata})
                     </ThemedText>
+                    <View style={styles.flightDetail}>
+                      <FontAwesome5
+                        name="plane"
+                        size={16}
+                        color={Colors.light.primary}
+                      />
+                      <ThemedText style={styles.flightText}>
+                        Outbound: {flights.outboundFlight.airline} - €
+                        {flights.outboundFlight.price}
+                        {flights.outboundFlight.isDirect
+                          ? ' (direct)'
+                          : ' (with stops)'}
+                      </ThemedText>
+                    </View>
+                    <View style={styles.flightDetail}>
+                      <FontAwesome5
+                        name="plane"
+                        size={16}
+                        color={Colors.light.primary}
+                        style={{ transform: [{ rotate: '180deg' }] }}
+                      />
+                      <ThemedText style={styles.flightText}>
+                        Return: {flights.returnFlight.airline} - €
+                        {flights.returnFlight.price}
+                        {flights.returnFlight.isDirect
+                          ? ' (direct)'
+                          : ' (with stops)'}
+                      </ThemedText>
+                    </View>
                   </View>
-                  <View style={styles.flightDetail}>
-                    <FontAwesome5 name="plane" size={16} color={Colors.light.primary} style={{ transform: [{ rotate: '180deg' }] }} />
-                    <ThemedText style={styles.flightText}>
-                      Return: {flights.returnFlight.airline} - €{flights.returnFlight.price}
-                      {flights.returnFlight.isDirect ? ' (direct)' : ' (with stops)'}
-                    </ThemedText>
-                  </View>
-                </View>
-              ))}
+                )
+              )}
             </View>
           </View>
-          
+
           <View style={styles.returnButtonContainer}>
-            <PrimaryButton
-              onPress={handleReturnHome}
-              label="Return Home"
-            />
+            <PrimaryButton onPress={handleReturnHome} label="Return Home" />
           </View>
         </View>
       </ScrollView>
