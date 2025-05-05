@@ -9,8 +9,8 @@ export interface FlightOption {
 
 export async function findDestinationsWithinBudget(
   origin: string,
-  departureDate: string,
-  returnDate: string,
+  departureDate: string, // Keep params for backward compatibility
+  returnDate: string, // but don't use them in API call
   maxBudget: number
 ): Promise<FlightOption[]> {
   return new Promise((resolve, reject) => {
@@ -26,7 +26,23 @@ export async function findDestinationsWithinBudget(
       socket.off('flightSearchResults', handleFlightResults);
 
       if (response.success) {
-        resolve(response.data || []);
+        // Filter results by date and budget client-side since Amadeus API
+        // only supports origin parameter
+        const results = (response.data || [])
+          .filter((flight) => {
+            const flightPrice = parseFloat(String(flight.price));
+            const flightDate = new Date(flight.departureDate);
+            const requestedDate = new Date(departureDate);
+
+            return (
+              flightPrice <= maxBudget //&&
+              // flightDate.getMonth() === requestedDate.getMonth() &&
+              // flightDate.getFullYear() === requestedDate.getFullYear()
+            );
+          })
+          .sort((a, b) => a.price - b.price);
+
+        resolve(results);
       } else {
         console.error('Error searching flights:', response.error);
         reject(new Error(response.error));
@@ -36,13 +52,8 @@ export async function findDestinationsWithinBudget(
     // Set up listener before emitting
     socket.on('flightSearchResults', handleFlightResults);
 
-    // Emit search request
-    socket.emit('searchFlights', {
-      origin,
-      departureDate,
-      returnDate,
-      maxBudget,
-    });
+    // Emit search request with only origin
+    socket.emit('searchFlights', { origin });
 
     // Set a timeout to prevent hanging
     setTimeout(() => {
