@@ -34,6 +34,7 @@ interface LobbyState {
   };
   selectedDestination: string | null;
   // Actions
+  setIsHost: (isHost: boolean) => void;
   setLobbyCode: (code: string | null) => void;
   setPlayerId: (id: string | null) => void;
   setPlayers: (players: Player[] | ((current: Player[]) => Player[])) => void;
@@ -63,6 +64,7 @@ export const useLobbyStore = create<LobbyState>()((set, get) => ({
   membersAnswers: undefined,
   selectedDestination: null,
 
+  setIsHost: (isHost) => set({ isHost }),
   setLobbyCode: (code) => set({ lobbyCode: code }),
   setPlayerId: (id) => set({ playerId: id }),
   setPlayers: (players) =>

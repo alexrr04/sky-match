@@ -56,14 +56,16 @@ export default function CountdownScreen() {
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const { navigateTo } = useNavigate();
 
-  const membersAnswers = useTripStateReactive('membersAnswers');
+  const membersAnswers = getLobbyStateValue('membersAnswers');
   const isHost = getLobbyStateValue('isHost');
   const lobbyCode = getLobbyStateValue('lobbyCode');
   const setSelectedDestination = useTripStateAction('setSelectedDestination');
   const setPhase = useLobbyStateAction('setPhase');
 
   useEffect(() => {
+    console.log('Entering useEffect for CountdownScreen');
     if (isHost && membersAnswers) {
+      console.log('Host detected, computing destination...');
       // Format data for destination matcher
       const groupInput: GroupInput = {
         members: Object.entries(membersAnswers.phase1Answers).map(
@@ -83,10 +85,12 @@ export default function CountdownScreen() {
         returnDate: '2024-06-07',
         code: lobbyCode || 'DEFAULT',
       };
+      console.log('Group input:', groupInput);
 
       // Compute destination
-      findBestMatchingDestinations(groupInput)
-        .then((destinations) => {
+      (async () => {
+        try {
+          const destinations = await findBestMatchingDestinations(groupInput);
           if (destinations.length > 0) {
             const bestDestination = destinations[0];
             socket.emit('computedDestination', {
@@ -94,10 +98,10 @@ export default function CountdownScreen() {
               data: bestDestination,
             });
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error('Error computing destination:', error);
-        });
+        }
+      })();
     }
 
     // Listen for computed destination

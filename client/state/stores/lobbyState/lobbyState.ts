@@ -35,6 +35,7 @@ export interface LobbyState {
   selectedDestination: string | null;
   send: (msg: any) => void;
   // Actions
+  setIsHost: (isHost: boolean) => void;
   setLobbyCode: (code: string | null) => void;
   setPlayerId: (id: string | null) => void;
   setPlayers: (players: Player[] | ((current: Player[]) => Player[])) => void;

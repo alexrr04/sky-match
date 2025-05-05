@@ -22,6 +22,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { useLobbyStateAction } from '@/state/stores/lobbyState/lobbySelector';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,6 +32,8 @@ export default function CreateGroup() {
   const [endDate, setEndDate] = useState('');
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const { navigateTo } = useNavigate();
+
+  const setIsHost = useLobbyStateAction('setIsHost');
 
   // Animation values
   const iconRotate = useSharedValue(0);
@@ -119,6 +122,7 @@ export default function CreateGroup() {
           }
         }
       );
+      setIsHost(true);
     }
   };
 
