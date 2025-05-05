@@ -136,14 +136,14 @@ io.on('connection', (socket) => {
     });
 
     if (allCompleted) {
-      // Get both quiz and phase1 answers
+      // Get both quiz and phase1 answers with member names
       const allAnswers = {
         quizAnswers: lobby.members.reduce((acc, member) => {
-          acc[member.id] = member.quizAnswers;
+          acc[member.name] = member.quizAnswers;
           return acc;
         }, {}),
         phase1Answers: lobby.members.reduce((acc, member) => {
-          acc[member.id] = member.phase1Answers;
+          acc[member.name] = member.phase1Answers;
           return acc;
         }, {}),
       };
