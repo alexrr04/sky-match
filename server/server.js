@@ -297,10 +297,17 @@ io.on('connection', (socket) => {
 
     // Broadcast the computed destination to all members in the lobby
     console.log(`Broadcasting computed destination to lobby ${lobbyCode}:`);
-    io.emit('destinationComputed', {
-      success: true,
-      data: data,
-    });
+    if (data.success) {
+      io.emit('destinationComputed', {
+        success: true,
+        data: data,
+      });
+    } else {
+      io.emit('destinationComputed', {
+        success: false,
+        message: 'Error computing destination',
+      });
+    }
   });
 
   socket.on('disconnect', () => {
