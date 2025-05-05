@@ -190,7 +190,8 @@ io.on('connection', (socket) => {
 
     if (allCompleted) {
       console.log(
-        'All members completed phase 1\n' + membersAnswers.toString()
+        'All members completed phase 1\n' +
+          JSON.stringify(membersAnswers, null, 2)
       );
       if (lobby.phase1Timer) {
         clearTimeout(lobby.phase1Timer);
