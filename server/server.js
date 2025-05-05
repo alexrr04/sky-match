@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
           io.emit('navigateToQuiz', { lobbyCode });
         }, 1000);
       }
-    }, 25000);
+    }, 30000);
 
     io.emit('gameStarted', {
       lobbyCode,
@@ -118,23 +118,23 @@ io.on('connection', (socket) => {
     // Add this user to completed set
     lobby.quizCompleted.add(socket.id);
 
-    // If this is the first person to complete, start the 30-second timer
-    if (lobby.quizCompleted.size === 1) {
-      lobby.quizStartTime = Date.now();
-      lobby.quizTimer = setTimeout(() => {
-        if (lobbies[lobbyCode]) {
-          io.emit('quizTimeUp', {
-            lobbyCode,
-            success: true,
-          });
-          clearTimeout(lobby.quizTimer);
-          // Navigate everyone to countdown after 1 second
-          setTimeout(() => {
-            io.emit('navigateToCountdown', { lobbyCode });
-          }, 1000);
-        }
-      }, 30000); // 30 seconds
-    }
+    // // If this is the first person to complete, start the 30-second timer
+    // if (lobby.quizCompleted.size === 1) {
+    //   lobby.quizStartTime = Date.now();
+    //   lobby.quizTimer = setTimeout(() => {
+    //     if (lobbies[lobbyCode]) {
+    //       io.emit('quizTimeUp', {
+    //         lobbyCode,
+    //         success: true,
+    //       });
+    //       clearTimeout(lobby.quizTimer);
+    //       // Navigate everyone to countdown after 1 second
+    //       setTimeout(() => {
+    //         io.emit('navigateToCountdown', { lobbyCode });
+    //       }, 1000);
+    //     }
+    //   }, 30000); // 30 seconds
+    // }
 
     // Check if everyone has completed
     const allCompleted = Array.from(lobby.members).every((member) =>
@@ -158,6 +158,10 @@ io.on('connection', (socket) => {
 
     if (allCompleted) {
       // Clear the timer since everyone finished early
+      console.log(
+        'All members completed the quiz\n' +
+          JSON.stringify(membersAnswers, null, 2)
+      );
       if (lobby.quizTimer) {
         clearTimeout(lobby.quizTimer);
       }
