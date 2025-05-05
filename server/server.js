@@ -338,7 +338,7 @@ io.on('connection', (socket) => {
 
     // Clear stored search results for this lobby
     searchResults.delete(lobbyCode);
-    Broad;
+
     // Broadcast the computed destination to all members in the lobby
     console.log(`Broadcasting computed destination to lobby ${lobbyCode}:`);
     if (data.success) {
