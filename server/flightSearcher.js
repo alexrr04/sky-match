@@ -49,13 +49,10 @@ async function findDestinationsWithinBudget(
       returnDate: flight.returnDate,
       price: {
         total: flight.price.total,
-        currency: flight.price.currency || 'EUR',
       },
     }));
 
-    return flightOptions.sort(
-      (a, b) => parseFloat(a.price.total) - parseFloat(b.price.total)
-    );
+    return flightOptions;
   } catch (error) {
     console.error('Error searching flights:', error);
     return [];
