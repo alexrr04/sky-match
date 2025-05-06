@@ -212,10 +212,7 @@ export default function EndGameScreen() {
                       />
                       <ThemedText style={styles.flightText}>
                         Outbound: {flights.outboundFlight.airline} - €
-                        {flights.outboundFlight.price}
-                        {flights.outboundFlight.isDirect
-                          ? ' (direct)'
-                          : ' (with stops)'}
+                        {flights.outboundFlight.price} (direct)
                       </ThemedText>
                     </View>
                     <View style={styles.flightDetail}>
@@ -227,10 +224,7 @@ export default function EndGameScreen() {
                       />
                       <ThemedText style={styles.flightText}>
                         Return: {flights.returnFlight.airline} - €
-                        {flights.returnFlight.price}
-                        {flights.returnFlight.isDirect
-                          ? ' (direct)'
-                          : ' (with stops)'}
+                        {flights.returnFlight.price} (direct)
                       </ThemedText>
                     </View>
                   </View>
