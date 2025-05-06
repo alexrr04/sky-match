@@ -14,7 +14,8 @@ function calculateDuration(departureDate, returnDate) {
     throw new Error('Invalid date format');
   }
 
-  const duration = Math.abs(returnDateObj - departure) / (1000 * 60 * 60 * 24);
+  const duration =
+    Math.abs(returnDateObj - departure) / (1000 * 60 * 60 * 24) + 1;
   console.log(`Duration: ${duration} days`);
   return duration;
 }
