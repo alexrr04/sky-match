@@ -31,7 +31,7 @@ async function findDestinationsWithinBudget(
     console.log('Searching flights from:', origin);
     const response = await amadeus.shopping.flightDestinations.get({
       origin: origin,
-      departureDate: departureDate,
+      departureDate: departureDate, // TODO: Use ISO format for dates
       duration: duration,
       maxPrice: budget,
     });
