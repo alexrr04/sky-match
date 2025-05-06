@@ -6,11 +6,6 @@ const amadeus = new Amadeus({
   clientSecret: process.env.AMADEUS_API_SECRET,
 });
 
-function formatToISODate(dateString) {
-  const [month, day, year] = dateString.split('-');
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-}
-
 function calculateDuration(departureDate, returnDate) {
   const departure = new Date(departureDate);
   const returnDateObj = new Date(returnDate);
@@ -30,17 +25,13 @@ async function findDestinationsWithinBudget(
   returnDate,
   budget
 ) {
-  // Convert dates to ISO format
-  const isoDepartureDate = formatToISODate(departureDate);
-  const isoReturnDate = formatToISODate(returnDate);
-
-  const duration = calculateDuration(isoDepartureDate, isoReturnDate);
+  const duration = calculateDuration(departureDate, returnDate);
 
   try {
     console.log('Searching flights from:', origin);
     const response = await amadeus.shopping.flightDestinations.get({
       origin: origin,
-      departureDate: isoDepartureDate,
+      departureDate: departureDate,
       duration: duration,
       maxPrice: budget,
     });
