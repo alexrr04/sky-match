@@ -6,11 +6,34 @@ const amadeus = new Amadeus({
   clientSecret: process.env.AMADEUS_API_SECRET,
 });
 
-async function findDestinationsWithinBudget(origin) {
+function calculateDuration(departureDate, returnDate) {
+  const departure = new Date(departureDate);
+  const returnDateObj = new Date(returnDate);
+
+  if (isNaN(departure.getTime()) || isNaN(returnDateObj.getTime())) {
+    throw new Error('Invalid date format');
+  }
+
+  const duration = Math.abs(returnDateObj - departure) / (1000 * 60 * 60 * 24);
+  console.log(`Duration: ${duration} days`);
+  return duration;
+}
+
+async function findDestinationsWithinBudget(
+  origin,
+  departureDate,
+  returnDate,
+  budget
+) {
+  const duration = calculateDuration(departureDate, returnDate);
+
   try {
     console.log('Searching flights from:', origin);
     const response = await amadeus.shopping.flightDestinations.get({
       origin: origin,
+      departureDate: departureDate,
+      duration: duration,
+      maxPrice: budget,
     });
 
     if (!response.data || response.data.length === 0) {

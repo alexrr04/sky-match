@@ -290,7 +290,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('searchFlights', async (data) => {
-    const { origin } = data;
+    const { origin, departureDate, returnDate, maxBudget } = data;
     const lobbyCode = socketToLobby[socket.id];
     const lobby = lobbies[lobbyCode];
 
@@ -300,7 +300,12 @@ io.on('connection', (socket) => {
 
     try {
       console.log(`Searching flights from ${origin} for lobby ${lobbyCode}`);
-      const results = await findDestinationsWithinBudget(origin);
+      const results = await findDestinationsWithinBudget(
+        origin,
+        departureDate,
+        returnDate,
+        maxBudget
+      );
 
       // Store results for this origin
       if (!searchResults.has(lobbyCode)) {
