@@ -346,17 +346,7 @@ io.on('connection', (socket) => {
 
     // Broadcast the computed destination to all members in the lobby
     console.log(`Broadcasting computed destination to lobby ${lobbyCode}:`);
-    if (data.success) {
-      io.emit('destinationComputed', {
-        success: true,
-        data: data,
-      });
-    } else {
-      io.emit('destinationComputed', {
-        success: false,
-        message: 'Error computing destination',
-      });
-    }
+    io.emit('destinationComputed', data); // Forward the data structure directly
   });
 
   socket.on('disconnect', () => {
