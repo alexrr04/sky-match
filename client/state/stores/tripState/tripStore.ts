@@ -103,19 +103,16 @@ export const useTripStore = create<TripState>((set, get) => ({
   getSelectedDestination: () => get().selectedDestination,
   setDestinationImage: (url: string) => set({ destinationImage: url }),
   getDestinationImage: () => get().destinationImage,
+  reset: () =>
+    set({
+      departureDate: '',
+      returnDate: '',
+      phase: 0,
+      progress: 0,
+      phase1Data: null,
+      quizAnswers: [],
+      memberPreferences: null,
+      selectedDestination: null,
+      destinationImage: null,
+    }),
 }));
-
-// export const useTripStore = create<TripState>(
-//   tripStateLogger({ showOnlyChanges: true })((set, get) => ({
-//     phase: 1,
-//     progress: 0,
-//     setPhase: (phase) => {
-//       set({ phase });
-//     },
-//     setProgress: (progress) => {
-//       set({ progress });
-//     },
-//     getPhase: () => get().phase,
-//     getProgress: () => get().progress,
-//   }))
-// );

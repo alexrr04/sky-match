@@ -89,7 +89,19 @@ export const useLobbyStore = create<LobbyState>()((set, get) => ({
     })),
   setHasAnswered: (answered) => set({ hasAnswered: answered }),
   setSend: (send) => set({ send }),
-  reset: () => set({}),
+  reset: () =>
+    set({
+      lobbyCode: null,
+      playerId: null,
+      players: [],
+      phase: 'waiting' as Phase,
+      isHost: false,
+      currentQuestion: null,
+      hasAnswered: false,
+      send: () => {},
+      membersAnswers: undefined,
+      selectedDestination: null,
+    }),
   setMembersAnswers: (answers) => set({ membersAnswers: answers }),
   getMembersAnswers: () => get().membersAnswers,
   setSelectedDestination: (destination) =>

@@ -23,6 +23,9 @@ import Animated, {
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigate } from '@/hooks/useNavigate';
 import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
+import { useLobbyStore } from '@/state/stores/lobbyState/lobbyStore';
+import { useTripStore } from '@/state/stores/tripState/tripStore';
+import { useLobbyStateAction } from '@/state/stores/lobbyState/lobbySelector';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,6 +33,8 @@ export default function EndGameScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const confettiRef = useRef<ConfettiCannon>(null);
   const { navigateTo } = useNavigate();
+  const resetLobby = useLobbyStateAction('reset');
+  const resetTrip = useTripStateAction('reset');
 
   useEffect(() => {
     // Shoot confetti when the screen appears
@@ -56,6 +61,9 @@ export default function EndGameScreen() {
   const getDestinationImage = useTripStateAction('getDestinationImage');
 
   const handleReturnHome = () => {
+    // Reset both stores before navigation
+    resetLobby();
+    resetTrip();
     navigateTo('/(game)' as any);
   };
 

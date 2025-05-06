@@ -40,6 +40,7 @@ export interface TripState {
     budget: number;
     hasLicense: boolean;
   }) => void;
+  reset: () => void;
   setMemberPreferences: (preferences: Record<string, boolean>) => void;
   getMemberPreferences: () => Record<string, boolean>;
   setSelectedDestination: (destination: GroupDestination | null) => void;

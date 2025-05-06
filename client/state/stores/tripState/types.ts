@@ -53,4 +53,5 @@ export interface TripState {
   setDestinationImage: (url: string) => void;
   getDestinationImage: () => string | null;
   setSelectedDestination: (destination: GroupDestination) => void;
+  reset: () => void;
 }
