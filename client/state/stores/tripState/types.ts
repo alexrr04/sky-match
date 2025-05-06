@@ -30,6 +30,8 @@ export interface QuizAnswer {
 import { GroupDestination } from '@/constants/types';
 
 export interface TripState {
+  departureDate: string;
+  returnDate: string;
   phase: number;
   progress: number;
   phase1Data: Phase1Data | null;
@@ -37,6 +39,10 @@ export interface TripState {
   memberPreferences: MemberPreferences | null;
   selectedDestination: GroupDestination | null;
   destinationImage: string | null;
+  setDepartureDate: (date: string) => void;
+  setReturnDate: (date: string) => void;
+  getDepartureDate: () => string;
+  getReturnDate: () => string;
   setPhase: (phase: number) => void;
   setProgress: (progress: number) => void;
   setPhase1Data: (data: Phase1Data) => void;

@@ -6,6 +6,8 @@ import { searchCityPhotos } from '@/services/PexelsService';
 import { GroupInput, GroupDestination } from '@/constants/types';
 
 export const useTripStore = create<TripState>((set, get) => ({
+  departureDate: '',
+  returnDate: '',
   phase: 0,
   progress: 0,
   phase1Data: null,
@@ -14,6 +16,8 @@ export const useTripStore = create<TripState>((set, get) => ({
   selectedDestination: null as GroupDestination | null,
   destinationImage: null,
 
+  setDepartureDate: (date: string) => set({ departureDate: date }),
+  setReturnDate: (date: string) => set({ returnDate: date }),
   setPhase: (phase: number) => set({ phase }),
   setProgress: (progress: number) => set({ progress }),
 
@@ -82,6 +86,8 @@ export const useTripStore = create<TripState>((set, get) => ({
     }
   },
 
+  getDepartureDate: () => get().departureDate,
+  getReturnDate: () => get().returnDate,
   getMemberPreferences: () => get().memberPreferences,
   setSelectedDestination: (destination: GroupDestination | null) => {
     set({ selectedDestination: destination });

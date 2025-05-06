@@ -11,6 +11,8 @@ export type Phase =
 export interface TripState {
   phase: Phase;
   progress: number;
+  departureDate: string | null;
+  returnDate: string | null;
   memberPreferences: Record<string, boolean>;
   membersAnswers: {
     quizAnswers: Record<string, string[]>;
@@ -25,6 +27,10 @@ export interface TripState {
   };
   selectedDestination: GroupDestination | null;
   destinationImage: string | null;
+  setDepartureDate: (date: string) => void;
+  setReturnDate: (date: string) => void;
+  getDepartureDate: () => string;
+  getReturnDate: () => string;
   setPhase: (phase: Phase) => void;
   setProgress: (progress: number) => void;
   getPhase: () => number;

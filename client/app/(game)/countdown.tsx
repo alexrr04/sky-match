@@ -62,6 +62,9 @@ export default function CountdownScreen() {
   const setSelectedDestination = useTripStateAction('setSelectedDestination');
   const setPhase = useLobbyStateAction('setPhase');
 
+  const departureDate = useTripStateReactive('departureDate');
+  const returnDate = useTripStateReactive('returnDate');
+
   useEffect(() => {
     console.log('Entering useEffect for CountdownScreen');
     if (isHost && membersAnswers) {
@@ -81,8 +84,8 @@ export default function CountdownScreen() {
             } as Member;
           }
         ),
-        departureDate: '2024-06-01',
-        returnDate: '2024-06-07',
+        departureDate: departureDate!,
+        returnDate: returnDate!,
         code: lobbyCode || 'DEFAULT',
       };
       console.log('Group input:', groupInput);

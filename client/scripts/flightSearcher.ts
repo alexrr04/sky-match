@@ -52,8 +52,13 @@ export async function findDestinationsWithinBudget(
     // Set up listener before emitting
     socket.on('flightSearchResults', handleFlightResults);
 
-    // Emit search request with only origin
-    socket.emit('searchFlights', { origin });
+    // Emit search request with origin, departureDate, and returnDate
+    socket.emit('searchFlights', {
+      origin,
+      departureDate,
+      returnDate,
+      maxBudget,
+    });
 
     // Set a timeout to prevent hanging
     setTimeout(() => {

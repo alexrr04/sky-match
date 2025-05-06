@@ -23,6 +23,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useLobbyStateAction } from '@/state/stores/lobbyState/lobbySelector';
+import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,6 +33,9 @@ export default function CreateGroup() {
   const [endDate, setEndDate] = useState('');
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const { navigateTo } = useNavigate();
+
+  const setDepartureDate = useTripStateAction('setDepartureDate');
+  const setReturnDate = useTripStateAction('setReturnDate');
 
   const setIsHost = useLobbyStateAction('setIsHost');
 
@@ -52,6 +56,8 @@ export default function CreateGroup() {
       // Start new selection
       const dateString = day.dateString;
       setStartDate(dateString);
+      // setDepartureDate(new Date(dateString));
+      // setReturnDate(new Date(dateString));
       setEndDate('');
       setMarkedDates({
         [dateString]: {
@@ -78,6 +84,7 @@ export default function CreateGroup() {
       while (currentDate <= endDateObj) {
         const dateStr = currentDate.toISOString().split('T')[0];
         if (dateStr === startDate) {
+          setDepartureDate(dateStr);
           range[dateStr] = {
             startingDay: true,
             color: Colors.light.primary,
@@ -85,6 +92,7 @@ export default function CreateGroup() {
             selected: true,
           };
         } else if (dateStr === dateString) {
+          setReturnDate(dateStr);
           range[dateStr] = {
             endingDay: true,
             color: Colors.light.primary,
