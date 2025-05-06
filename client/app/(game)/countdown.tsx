@@ -26,7 +26,8 @@ const { width, height } = Dimensions.get('window');
 
 interface DestinationResponse {
   success: boolean;
-  data: GroupDestination;
+  data: GroupDestination | string;
+  message?: string;
 }
 
 function convertQuizAnswersToPreferences(
@@ -115,14 +116,17 @@ export default function CountdownScreen() {
 
     // Listen for computed destination
     socket.on('destinationComputed', (data: DestinationResponse) => {
-      if (data.success) {
+      if (data.success && typeof data.data !== 'string') {
         setSelectedDestination(data.data);
         setIsLoading(false);
         setCountdownStarted(true);
         setPhase('countdown');
         startCountdown();
       } else {
-        console.log('Error computing destination');
+        console.log(
+          'Error computing destination:',
+          typeof data.data === 'string' ? data.data : data.message
+        );
         setIsLoading(false);
         setPhase('countdown');
         startCountdown();
