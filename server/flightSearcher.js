@@ -47,9 +47,7 @@ async function findDestinationsWithinBudget(
       destination: flight.destination,
       departureDate: flight.departureDate,
       returnDate: flight.returnDate,
-      price: {
-        total: flight.price.total,
-      },
+      price: flight.price.total,
     }));
 
     return flightOptions;
