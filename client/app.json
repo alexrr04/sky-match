@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "trip-planner",
-    "slug": "trip-planner",
+    "name": "SkyMatch",
+    "slug": "sky-match",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "tripplanner",
+    "scheme": "skymatch",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.alexrr04.tripplanner"
+      "package": "com.alexrr04.skymatch"
     },
     "web": {
       "bundler": "metro",
