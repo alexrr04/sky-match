@@ -1,17 +1,11 @@
 import { create } from 'zustand';
+import { Phase } from '@/state/stores/tripState/tripState';
 
-interface Player {
+export interface Player {
   playerId: string;
   name: string;
   isHost: boolean;
 }
-
-type Phase =
-  | 'waiting'
-  | 'personal'
-  | 'preference'
-  | 'results_processing'
-  | 'done';
 
 interface Question {
   id: string;
@@ -23,10 +17,24 @@ interface LobbyState {
   playerId: string | null;
   players: Player[];
   phase: Phase;
+  isHost: boolean;
   currentQuestion: Question | null;
   hasAnswered: boolean;
   send: (msg: any) => void;
+  membersAnswers?: {
+    quizAnswers: Record<string, string[]>;
+    phase1Answers: Record<
+      string,
+      {
+        originAirport: string;
+        budget: number;
+        hasLicense: boolean;
+      }
+    >;
+  };
+  selectedDestination: string | null;
   // Actions
+  setIsHost: (isHost: boolean) => void;
   setLobbyCode: (code: string | null) => void;
   setPlayerId: (id: string | null) => void;
   setPlayers: (players: Player[] | ((current: Player[]) => Player[])) => void;
@@ -39,21 +47,24 @@ interface LobbyState {
   setHasAnswered: (answered: boolean) => void;
   setSend: (send: (msg: any) => void) => void;
   reset: () => void;
+  setMembersAnswers: (answers: LobbyState['membersAnswers']) => void;
+  getMembersAnswers: () => LobbyState['membersAnswers'];
+  setSelectedDestination: (destination: string | null) => void;
 }
 
-const initialState = {
+export const useLobbyStore = create<LobbyState>()((set, get) => ({
   lobbyCode: null,
   playerId: null,
   players: [],
   phase: 'waiting' as Phase,
+  isHost: false,
   currentQuestion: null,
   hasAnswered: false,
   send: () => {},
-};
+  membersAnswers: undefined,
+  selectedDestination: null,
 
-export const useLobbyStore = create<LobbyState>()((set) => ({
-  ...initialState,
-
+  setIsHost: (isHost) => set({ isHost }),
   setLobbyCode: (code) => set({ lobbyCode: code }),
   setPlayerId: (id) => set({ playerId: id }),
   setPlayers: (players) =>
@@ -78,5 +89,21 @@ export const useLobbyStore = create<LobbyState>()((set) => ({
     })),
   setHasAnswered: (answered) => set({ hasAnswered: answered }),
   setSend: (send) => set({ send }),
-  reset: () => set(initialState),
+  reset: () =>
+    set({
+      lobbyCode: null,
+      playerId: null,
+      players: [],
+      phase: 'waiting' as Phase,
+      isHost: false,
+      currentQuestion: null,
+      hasAnswered: false,
+      send: () => {},
+      membersAnswers: undefined,
+      selectedDestination: null,
+    }),
+  setMembersAnswers: (answers) => set({ membersAnswers: answers }),
+  getMembersAnswers: () => get().membersAnswers,
+  setSelectedDestination: (destination) =>
+    set({ selectedDestination: destination }),
 }));

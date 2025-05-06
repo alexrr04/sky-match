@@ -10,7 +10,6 @@ import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';
 import { useNavigate } from '@/hooks/useNavigate';
-// import { useTripStore } from '@/state/stores/tripState/tripState';
 import { ThemedText } from '@/components/ThemedText';
 import { socket } from '@/utils/socket';
 import {
@@ -26,11 +25,27 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
+import { useLobbyStore } from '@/state/stores/lobbyState/lobbyStore';
 
 interface QuizStatus {
   completed: string[];
   total: number;
   timeStarted: number | null;
+}
+
+interface CompiledAnswers {
+  success: boolean;
+  data: {
+    quizAnswers: Record<string, string[]>;
+    phase1Answers: Record<
+      string,
+      {
+        originAirport: string;
+        budget: number;
+        hasLicense: boolean;
+      }
+    >;
+  };
 }
 
 export default function QuizScreen() {
@@ -40,6 +55,7 @@ export default function QuizScreen() {
   const [totalMembers, setTotalMembers] = useState(0);
   const [timeLeft, setTimeLeft] = useState<number | null>(30); // Initialize with 30
   const [answers, setAnswers] = useState<string[]>([]);
+  const setMembersAnswers = useLobbyStore((state) => state.setMembersAnswers);
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const imagesLoaded = useImagePreloader(
@@ -90,6 +106,14 @@ export default function QuizScreen() {
       }
     });
 
+    // Host-only: receive all answers when everyone completes
+    socket.on('allAnswersCompiled', (data: CompiledAnswers) => {
+      console.log('All answers compiled:', JSON.stringify(data));
+      if (data.success && data.data) {
+        setMembersAnswers(data.data);
+      }
+    });
+
     // Listen for time up event
     socket.on('quizTimeUp', () => {
       if (!isSubmitting) {
@@ -106,6 +130,7 @@ export default function QuizScreen() {
       socket.off('quizStatus');
       socket.off('quizTimeUp');
       socket.off('navigateToCountdown');
+      socket.off('allAnswersCompiled');
     };
   }, [isSubmitting]);
 
@@ -196,14 +221,15 @@ export default function QuizScreen() {
       direction === 'left'
         ? currentQuestion.optionLeft
         : currentQuestion.optionRight;
-    console.log(
-      `Question ${currentQuestion.id}: User chose ${selectedOption.label}`
-    );
+
+    // Store the answer
+    setAnswers((prev) => [...prev, selectedOption.label]);
 
     if (currentQuestionIndex < quizQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      navigateTo('/countdown');
+      // All questions answered, submit the quiz
+      handleQuizComplete();
     }
   };
 
@@ -214,9 +240,6 @@ export default function QuizScreen() {
         <ThemedText style={styles.waitingText}>
           {completedMembers.length} of {totalMembers} members ready
         </ThemedText>
-        {/* <ThemedText style={styles.timerText}>
-          {Math.floor(timeLeft || 0)}s left
-        </ThemedText> */}
       </View>
     );
   }

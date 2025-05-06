@@ -1,4 +1,4 @@
-import { findDestinationsWithinBudget } from './FlightSearcher';
+import { findDestinationsWithinBudget } from './flightSearcher';
 import airportsWithAttributes from '../constants/airports_with_attributes_full.json' with { type: 'json' };
 import { Member, GroupInput, GroupDestination, AirportInfo, AirportAttributes } from '@/constants/types';
 
@@ -141,14 +141,20 @@ async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDes
       const originMembers = originGroups.get(origin)!.members;
 
       for (const dest of destinations) {
-        const destinationKey = dest.destination;
-        const destinationIATA = destinationKey.split(' (')[1].replace(')', '');
+        const destinationIATA = dest.destination;
         const airportInfo = airportAttributesCache.get(destinationIATA);
         
-        if (!airportInfo) continue;
+        if (!airportInfo) {
+          console.warn(`Airport info not found for IATA: ${destinationIATA}`);
+          continue;
+        }
 
-        const totalCost = dest.outboundFlight.price + dest.returnFlight.price;
+        const destinationKey = `${airportInfo.name} (${destinationIATA})`;
+
+        const totalCost = parseFloat(dest.price);
         if (totalCost > originGroups.get(origin)!.lowestBudget) continue;
+
+        const pricePerFlight = totalCost / 2; // Split total price between outbound and return
 
         let destinationEntry = destinationsMap.get(destinationKey);
         if (!destinationEntry) {
@@ -169,14 +175,14 @@ async function findBestMatchingDestinations(group: GroupInput): Promise<GroupDes
           destinationEntry.memberFlights[member.name] = {
             origin,
             outboundFlight: {
-              airline: dest.outboundFlight.airline,
-              price: dest.outboundFlight.price,
-              isDirect: dest.outboundFlight.isDirect
+              airline: 'Multiple Airlines',
+              price: pricePerFlight,
+              isDirect: false
             },
             returnFlight: {
-              airline: dest.returnFlight.airline,
-              price: dest.returnFlight.price,
-              isDirect: dest.returnFlight.isDirect
+              airline: 'Multiple Airlines',
+              price: pricePerFlight,
+              isDirect: false
             }
           };
           destinationEntry.totalGroupCost += totalCost;
@@ -250,12 +256,8 @@ async function displayMatchingDestinations(group: GroupInput): Promise<void> {
       const budgetUsagePercent = ((totalCost / member.budget) * 100).toFixed(1);
       
       console.log(`\n  ${memberName} (${flights.origin} → ${iata}):`);
-      console.log(`    Outbound: ${flights.outboundFlight.airline} - €${flights.outboundFlight.price}${
-        flights.outboundFlight.isDirect ? ' (direct)' : ' (with stops)'
-      }`);
-      console.log(`    Return: ${flights.returnFlight.airline} - €${flights.returnFlight.price}${
-        flights.returnFlight.isDirect ? ' (direct)' : ' (with stops)'
-      }`);
+      console.log(`    Outbound: ${flights.outboundFlight.airline} - €${flights.outboundFlight.price} (direct)`);
+      console.log(`    Return: ${flights.returnFlight.airline} - €${flights.returnFlight.price} (direct)`);
       console.log(`    Total: €${totalCost} (${budgetUsagePercent}% of budget, €${remainingBudget} remaining)`);
     });
     console.log('\n-----------------------------------');
