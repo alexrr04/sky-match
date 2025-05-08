@@ -8,7 +8,7 @@
 
 ## About SkyMatch
 
-SkyMatch is a collaborative travel planning app developed during HackUPC 2024/2025 in partnership with Skyscanner. The app revolutionizes group trip planning by turning it into an engaging, Tinder-style game where friends collectively decide on their ideal vacation destination.
+SkyMatch is a collaborative travel planning app developed during HackUPC 2025. The app revolutionizes group trip planning by turning it into an engaging, real time game where friends collectively decide on their ideal vacation destination.
 
 ## Key Features
 
