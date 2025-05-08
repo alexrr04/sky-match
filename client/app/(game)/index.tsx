@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, { useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
@@ -221,7 +223,8 @@ export default function MainScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
       <View style={styles.backgroundContainer}>
         <FloatingShape 
           size={100} 
@@ -326,7 +329,8 @@ export default function MainScreen() {
           disabled={showPopup}
         />
       </Animated.View>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
