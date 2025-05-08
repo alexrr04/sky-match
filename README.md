@@ -33,7 +33,7 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 
 ## Project Structure
 
-```
+```bash
 .
 ├── client/             # Mobile app (Expo/React Native)
 │   ├── app/            # Application screens
