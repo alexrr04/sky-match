@@ -1,56 +1,108 @@
-# SkyMatch Trip Planner
+# SkyMatch
 
-A group trip planning app that helps friends decide on their next destination through a fun, interactive voting process.
+[Logo placeholder]
 
-## Setup and Running
+[Screenshots placeholder]
 
-### 1. Start the WebSocket Server
+[Demo video placeholder]
 
-```bash
-cd server
-npm install
-npm start
-```
+## About SkyMatch
 
-The WebSocket server will start on port 8080 (or the port specified in your .env file).
+SkyMatch is a collaborative travel planning app developed during HackUPC 2024/2025 in partnership with Skyscanner. The app revolutionizes group trip planning by turning it into an engaging, Tinder-style game where friends collectively decide on their ideal vacation destination.
 
-### 2. Start the Expo App
+## Key Features
 
-```bash
-cd app
-npm install
-expo start
-```
+- **Instant Group Creation**: Create a lobby and invite friends using a unique code
+- **Interactive Decision Making**: Swipe through travel preferences in a fun, Tinder-like interface
+- **Two-Phase Planning**:
+  - Personal Questions: Individual preferences, budget, travel restrictions
+  - Group Preferences: Vote on travel styles (Beach vs Mountain, Adventure vs Relaxation, etc.)
+- **Real-time Synchronization**: All participants see results instantly as votes come in
+- **Smart Destination Matching**: Uses Amadeus API and an AI-generated dataset to suggest the perfect destinations based on group preferences
 
-This will start the Expo development server. You can then:
+## Tech Stack
 
-- Press 'a' to open Android emulator
-- Press 'i' to open iOS simulator
-- Scan the QR code with Expo Go app on your physical device
+- **Frontend**:
+  - React Native with Expo
+  - TypeScript for type safety
+  - Zustand for state management
+- **Backend**:
+  - Node.js server
+  - Amadeus API integration
+  - Socket.IO for real-time communication
 
 ## Project Structure
 
 ```
-/trip-planner
-├── /app            # Expo + React Native + TypeScript + Zustand
-│   ├── /app       # Screens and navigation
-│   ├── /hooks     # Custom React hooks
-│   ├── /state     # Zustand state management
-│   └── /components # Reusable UI components
-└── /server        # Node.js + WebSocket server
+.
+├── client/               # Mobile app (Expo/React Native)
+│   ├── app/             # Application screens
+│   ├── components/      # Reusable UI components
+│   ├── state/          # Zustand store and state management
+│   ├── constants/      # App-wide constants and types
+│   └── utils/          # Utility functions
+|   └── ...
+│
+└── server/              # Backend server (Node.js)
+    └── server.js        # Main server file
+    └── ...
 ```
 
-## Game Flow
+## Getting Started
 
-1. Host creates a new lobby and gets a unique code
-2. Friends join using the lobby code
-3. Game progresses through phases:
-   - Personal questions (budget, preferences)
-   - Tinder-style A vs B voting
-   - Final results with trip recommendations
+### Prerequisites
 
-## Development
+- Node.js 18 or higher
+- npm
+- Expo CLI
+- Android emulator or physical device for testing
 
-- WebSocket server: Edit `/server/server.js`
-- Client state: Edit `/app/src/state/stores/lobbyState`
-- Game screens: Edit files in `/app/app/(game)/`
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/alexrr04/sky-match
+cd sky-match
+```
+
+2. Install client dependencies:
+
+```bash
+cd client
+npm install
+```
+
+3. Download the last release of Sky Match from the repo and install it on your mobile device or emulator:
+
+   - [SkyMatch APK](https://github.com/alexrr04/sky-match/releases/tag/v0.1.0-dev)
+
+4. Start the client:
+
+```bash
+npx expo start
+```
+
+5. Scan the QR code in the development server mode using your mobile device or emulator to open the app.
+
+6. Enjoy the app!
+
+### Important Notes
+
+- The server is hosted externally, so you don't need to run it locally
+- If you want to run the server locally for development:
+  1. Change the server address in `client/utils/socket.ts` to `localhost`
+  2. Run the server:
+  ```bash
+  cd server
+  npm install
+  node server.js
+  ```
+
+## Contributing
+
+This project was created during HackUPC 2425. Feel free to submit issues and enhancement requests.
+
+## License
+
+This project is licensed under the terms of the [LICENSE](LICENSE) file included in the repository.
