@@ -35,16 +35,16 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 
 ```
 .
-├── client/               # Mobile app (Expo/React Native)
-│   ├── app/             # Application screens
-│   ├── components/      # Reusable UI components
+├── client/             # Mobile app (Expo/React Native)
+│   ├── app/            # Application screens
+│   ├── components/     # Reusable UI components
 │   ├── state/          # Zustand store and state management
 │   ├── constants/      # App-wide constants and types
 │   └── utils/          # Utility functions
 |   └── ...
 │
-└── server/              # Backend server (Node.js)
-    └── server.js        # Main server file
+└── server/             # Backend server (Node.js)
+    └── server.js       # Main server file
     └── ...
 ```
 
