@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     fontSize: Math.min(width * 0.12, 48),
     fontWeight: 'bold',
     color: Colors.light.primaryText,
-    marginBottom: height * 0.2,
+    marginBottom: height * 0.26,
     zIndex: 2,
   },
   buttonContainer: {
