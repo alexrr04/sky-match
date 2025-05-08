@@ -21,16 +21,23 @@ interface PexelsSearchResponse {
   next_page: string;
 }
 
-const PEXELS_API_KEY = 'W1jpCAgbuhNOpVfiqOoJnqr2MJppKKrXZgWIsbWb0hhQ0AvfUPxip2P5';
+// TODO: Move to environment variables (it was a hackathon so we didn't really care about this)
+const PEXELS_API_KEY =
+  'W1jpCAgbuhNOpVfiqOoJnqr2MJppKKrXZgWIsbWb0hhQ0AvfUPxip2P5';
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
-export const searchCityPhotos = async (cityName: string): Promise<string | null> => {
+export const searchCityPhotos = async (
+  cityName: string
+): Promise<string | null> => {
   try {
-    const response = await fetch(`${PEXELS_API_URL}/search?query=${cityName} city landmarks&per_page=1&orientation=landscape`, {
-      headers: {
-        'Authorization': PEXELS_API_KEY
+    const response = await fetch(
+      `${PEXELS_API_URL}/search?query=${cityName} city landmarks&per_page=1&orientation=landscape`,
+      {
+        headers: {
+          Authorization: PEXELS_API_KEY,
+        },
       }
-    });
+    );
 
     if (!response.ok) {
       console.error('Pexels API error:', response.statusText);
@@ -38,7 +45,7 @@ export const searchCityPhotos = async (cityName: string): Promise<string | null>
     }
 
     const data: PexelsSearchResponse = await response.json();
-    
+
     if (data.photos.length === 0) {
       console.warn('No photos found for', cityName);
       return null;

@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  Text,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { SwipeCard } from '@/components/SwipeCard';
 import { quizQuestions } from '@/constants/QuizQuestions';

@@ -23,8 +23,6 @@ import Animated, {
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useNavigate } from '@/hooks/useNavigate';
 import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
-import { useLobbyStore } from '@/state/stores/lobbyState/lobbyStore';
-import { useTripStore } from '@/state/stores/tripState/tripStore';
 import { useLobbyStateAction } from '@/state/stores/lobbyState/lobbySelector';
 
 const { width, height } = Dimensions.get('window');

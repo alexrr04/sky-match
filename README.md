@@ -29,6 +29,7 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 - **Backend**:
   - Node.js server
   - Amadeus API integration
+  - Pexels API for images
   - Socket.IO for real-time communication
 
 ## Project Structure
@@ -40,11 +41,11 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 │   ├── components/     # Reusable UI components
 │   ├── state/          # Zustand store and state management
 │   ├── constants/      # App-wide constants and types
-│   └── utils/          # Utility functions
-|   └── ...
+│   ├── utils/          # Utility functions
+│   └── ...
 │
 └── server/             # Backend server (Node.js)
-    └── server.js       # Main server file
+    ├── server.js       # Main server file
     └── ...
 ```
 

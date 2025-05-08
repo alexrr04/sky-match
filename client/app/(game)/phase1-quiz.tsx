@@ -13,7 +13,6 @@ import { Colors } from '@/constants/Colors';
 import PrimaryButton from '@/components/PrimaryButton';
 import { useNavigate } from '@/hooks/useNavigate';
 import { socket } from '@/utils/socket';
-import { useTripStateAction } from '@/state/stores/tripState/tripSelector';
 
 interface Phase1Answer {
   originAirport: string;
