@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
-    minWidth: 200,
+    minWidth: 230,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: {
