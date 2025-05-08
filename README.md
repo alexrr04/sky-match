@@ -91,8 +91,10 @@ npx expo start
 
 - The server is hosted externally, so you don't need to run it locally
 - If you want to run the server locally for development:
+
   1. Change the server address in `client/utils/socket.ts` to `localhost`
   2. Run the server:
+
   ```bash
   cd server
   npm install
