@@ -7,6 +7,8 @@ import {
   Switch,
   Dimensions,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -125,7 +127,8 @@ export default function Phase1Quiz() {
   const isFormValid = originAirport.trim() !== '' && budget.trim() !== '';
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
       {/* Timer */}
       <View
         style={[styles.timerContainer, timeLeft <= 5 && styles.timerUrgent]}
@@ -238,7 +241,8 @@ export default function Phase1Quiz() {
           disabled={!isFormValid || isSubmitting}
         />
       </View>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
