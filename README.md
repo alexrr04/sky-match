@@ -1,6 +1,6 @@
 # SkyMatch
 
-![SkyMatch Resume](README_media\SkyMatch-HackUPC2025.png)
+![SkyMatch Summary](README_media/SkyMatch-HackUPC2025.png)
 
 ## About SkyMatch
 
