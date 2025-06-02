@@ -1,10 +1,6 @@
 # SkyMatch
 
-[Logo placeholder]
-
-[Screenshots placeholder]
-
-[Demo video placeholder]
+![SkyMatch Resume](README_media\SkyMatch-HackUPC2025.png)
 
 ## About SkyMatch
 
@@ -12,25 +8,25 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 
 ## Key Features
 
-- **Instant Group Creation**: Create a lobby and invite friends using a unique code
-- **Interactive Decision Making**: Swipe through travel preferences in a fun, Tinder-like interface
-- **Two-Phase Planning**:
-  - Personal Questions: Individual preferences, budget, travel restrictions
-  - Group Preferences: Vote on travel styles (Beach vs Mountain, Adventure vs Relaxation, etc.)
-- **Real-time Synchronization**: All participants see results instantly as votes come in
-- **Smart Destination Matching**: Uses Amadeus API and an AI-generated dataset to suggest the perfect destinations based on group preferences
+-   **Instant Group Creation**: Create a lobby and invite friends using a unique code
+-   **Interactive Decision Making**: Swipe through travel preferences in a fun, Tinder-like interface
+-   **Two-Phase Planning**:
+    -   Personal Questions: Individual preferences, budget, travel restrictions
+    -   Group Preferences: Vote on travel styles (Beach vs Mountain, Adventure vs Relaxation, etc.)
+-   **Real-time Synchronization**: All participants see results instantly as votes come in
+-   **Smart Destination Matching**: Uses Amadeus API and an AI-generated dataset to suggest the perfect destinations based on group preferences
 
 ## Tech Stack
 
-- **Frontend**:
-  - React Native with Expo
-  - TypeScript for type safety
-  - Zustand for state management
-- **Backend**:
-  - Node.js server
-  - Amadeus API integration
-  - Pexels API for images
-  - Socket.IO for real-time communication
+-   **Frontend**:
+    -   React Native with Expo
+    -   TypeScript for type safety
+    -   Zustand for state management
+-   **Backend**:
+    -   Node.js server
+    -   Amadeus API integration
+    -   Pexels API for images
+    -   Socket.IO for real-time communication
 
 ## Project Structure
 
@@ -53,10 +49,10 @@ SkyMatch is a collaborative travel planning app developed during HackUPC 2025. T
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- npm
-- Expo CLI
-- Android emulator or physical device for testing
+-   Node.js 18 or higher
+-   npm
+-   Expo CLI
+-   Android emulator or physical device for testing
 
 ### Installation
 
@@ -76,7 +72,7 @@ npm install
 
 3. Download the last release of Sky Match from the repo and install it on your mobile device or emulator:
 
-   - [SkyMatch APK](https://github.com/alexrr04/sky-match/releases/tag/v0.1.0-dev)
+    - [SkyMatch APK](https://github.com/alexrr04/sky-match/releases/tag/v0.1.0-dev)
 
 4. Start the client:
 
@@ -90,17 +86,17 @@ npx expo start
 
 ### Important Notes
 
-- The server is hosted externally, so you don't need to run it locally
-- If you want to run the server locally for development:
+-   The server is hosted externally, so you don't need to run it locally
+-   If you want to run the server locally for development:
 
-  1. Change the server address in `client/utils/socket.ts` to `localhost`
-  2. Run the server:
+    1. Change the server address in `client/utils/socket.ts` to `localhost`
+    2. Run the server:
 
-  ```bash
-  cd server
-  npm install
-  node server.js
-  ```
+    ```bash
+    cd server
+    npm install
+    node server.js
+    ```
 
 ## Contributing
 
